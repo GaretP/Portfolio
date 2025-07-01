@@ -177,37 +177,39 @@
       margin-left: 270px;
     }
 
-    .grid {
+    .main-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      grid-auto-rows: auto;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
       gap: 1.5rem;
-      margin-top: 1.5rem;
+      margin: 2rem 0;
+      padding-right: 2rem;
     }
     
-    .card {
-      background: rgba(255, 255, 255, 0.1); /* subtle transparent card */
-      padding: 1rem;
+    .main-grid section {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
-      text-align: center;
-      transition: transform 0.2s, background 0.2s;
+      padding: 1.5rem;
+      box-sizing: border-box;
+      min-height: 200px;
+      transition: background 0.2s, border 0.2s;
     }
     
-    .card:hover {
-      transform: translateY(-5px);
-      background: rgba(255, 255, 255, 0.2);
+    .main-grid section:hover {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .card h3 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #fff; /* keep white text */
+    .main-grid h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
+      color: #fff;
     }
     
-    .card p {
-      margin: 0.5rem 0 0 0;
-      font-size: 0.9rem;
-      color: #ddd; /* light gray */
+    .main-grid p {
+      color: #ccc;
+      font-size: 0.95rem;
     }
     
     section {
@@ -237,35 +239,22 @@
         <a href="#">Contact</a>
       </nav>
     </header>
-    <main>
-      <section>
-        <h2>My Professional Highlights</h2>
-        <div class="grid">
-          <div class="card">
-            <h3>100+</h3>
-            <p>Completed Projects</p>
-          </div>
-          <div class="card">
-            <h3>50+</h3>
-            <p>Satisfied Clients</p>
-          </div>
-          <div class="card">
-            <h3>6</h3>
-            <p>Years of Experience</p>
-          </div>
-          <div class="card">
-            <h3>Web Security</h3>
-            <p>Specialization</p>
-          </div>
-          <div class="card">
-            <h3>Cloud</h3>
-            <p>Infrastructure Expertise</p>
-          </div>
-          <div class="card">
-            <h3>Contact Me</h3>
-            <p>Get in Touch</p>
-          </div>
-        </div>
+    <main class="main-grid">
+      <section class="credentials">
+        <h2>Credentials</h2>
+        <p>Brief overview of your certifications, degrees, or relevant qualifications.</p>
+      </section>
+      <section class="description">
+        <h2>Description</h2>
+        <p>A short bio describing who you are, your mission, and your focus areas.</p>
+      </section>
+      <section class="projects">
+        <h2>Featured Projects</h2>
+        <p>Showcase a few of your most important projects.</p>
+      </section>
+      <section class="experience">
+        <h2>Previous Experience</h2>
+        <p>Summary of your professional history, roles, and companies.</p>
       </section>
     </main>
   </div>
