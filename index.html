@@ -177,6 +177,38 @@
       margin-left: 270px;
     }
 
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.1); /* subtle transparent card */
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .card h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #fff; /* keep white text */
+    }
+    
+    .card p {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.9rem;
+      color: #ddd; /* light gray */
+    }
+    
     section {
       margin-bottom: 2rem;
     }
@@ -206,11 +238,33 @@
     </header>
     <main>
       <section>
-        <h2>Welcome</h2>
-        <p>This is your portfolio home page content. You can customize this section with your own text, images, or links.</p>
-      </section>
-      <section style="height:1000px;">
-        <p>Scroll down to see more content.</p>
+        <h2>My Professional Highlights</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>100+</h3>
+            <p>Completed Projects</p>
+          </div>
+          <div class="card">
+            <h3>50+</h3>
+            <p>Satisfied Clients</p>
+          </div>
+          <div class="card">
+            <h3>6</h3>
+            <p>Years of Experience</p>
+          </div>
+          <div class="card">
+            <h3>Web Security</h3>
+            <p>Specialization</p>
+          </div>
+          <div class="card">
+            <h3>Cloud</h3>
+            <p>Infrastructure Expertise</p>
+          </div>
+          <div class="card">
+            <h3>Contact Me</h3>
+            <p>Get in Touch</p>
+          </div>
+        </div>
       </section>
     </main>
   </div>
