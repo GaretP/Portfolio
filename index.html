@@ -234,6 +234,39 @@
       background: rgba(255,255,255,0.2);
     }
 
+    .top-left .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .top-left .mini-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 0.75rem;
+      text-align: center;
+      transition: background 0.2s, border 0.2s;
+    }
+    
+    .top-left .mini-card:hover {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .top-left .mini-card h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+    
+    .top-left .mini-card p {
+      margin: 0.25rem 0 0 0;
+      font-size: 0.85rem;
+      color: #ccc;
+    }
+
     section {
       margin-bottom: 2rem;
     }
@@ -261,44 +294,55 @@
         <a href="#">Contact</a>
       </nav>
     </header>
-    <main class="main-quadrants">
-      <!-- Top Left Quadrant -->
-      <section class="top-left">
-        <h2>Professional Overview</h2>
-        <ul>
-          <li><strong>100+</strong> Completed Projects</li>
-          <li><strong>Cybersecurity Specialist</strong></li>
-          <li><strong>5</strong> Certifications</li>
-          <li><strong>6</strong> Years Experience</li>
-        </ul>
-      </section>
+      <main class="main-quadrants">
+        <!-- Top Left Quadrant -->
+        <section class="top-left">
+          <h2>Professional Overview</h2>
+          <div class="mini-grid">
+            <div class="mini-card">
+              <h3>100+</h3>
+              <p>Completed Projects</p>
+            </div>
+            <div class="mini-card">
+              <h3>Cybersecurity Specialist</h3>
+            </div>
+            <div class="mini-card">
+              <h3>5</h3>
+              <p>Certifications</p>
+            </div>
+            <div class="mini-card">
+              <h3>6</h3>
+              <p>Years Experience</p>
+            </div>
+          </div>
+        </section>
     
-      <!-- Top Right Quadrant -->
-      <section class="top-right">
-        <h2>About Me</h2>
-        <p>
-          I am a cybersecurity specialist focused on securing modern infrastructures.
-          My mission is to help organizations protect their digital assets with robust solutions.
-        </p>
-      </section>
+        <!-- Top Right Quadrant -->
+        <section class="top-right">
+          <h2>About Me</h2>
+          <p>
+            I am a cybersecurity specialist focused on securing modern infrastructures.
+            My mission is to help organizations protect their digital assets with robust solutions.
+          </p>
+        </section>
     
-      <!-- Bottom Left Quadrant -->
-      <section class="bottom-left">
-        <h2>View Projects</h2>
-        <p>
-          Explore my portfolio of completed engagements across multiple industries.
-        </p>
-        <a href="#">View All Projects</a>
-      </section>
+        <!-- Bottom Left Quadrant -->
+        <section class="bottom-left">
+          <h2>View Projects</h2>
+          <p>
+            Explore my portfolio of completed engagements across multiple industries.
+          </p>
+          <a href="#">View All Projects</a>
+        </section>
     
-      <!-- Bottom Right Quadrant -->
-      <section class="bottom-right">
-        <h2>Trusted By</h2>
-        <p>
-          Companies and clients who rely on my expertise.
-        </p>
-      </section>
-    </main>
+        <!-- Bottom Right Quadrant -->
+        <section class="bottom-right">
+          <h2>Trusted By</h2>
+          <p>
+            Companies and clients who rely on my expertise.
+          </p>
+        </section>
+      </main>
   </div>
 
   <script>
