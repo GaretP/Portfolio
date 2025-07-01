@@ -171,14 +171,6 @@
     nav a:hover {
       background: #ddd; /* soft hover without color change */
     }
-
-    .main {
-      padding: 2rem;
-      margin-left: 370px;
-      position: relative;
-      z-index: 2;
-      max-width: 1400px;
-    }
     
     .main-quadrants {
       display: grid;
@@ -187,6 +179,9 @@
       gap: 1.5rem;
       margin: 2rem 0;
       padding: 0 1rem;
+      margin-left: 370px;  /* This pushes it over to clear the sidebar */
+      position: relative;
+      z-index: 2;
     }
     
     .main-quadrants section {
