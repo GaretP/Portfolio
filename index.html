@@ -3,8 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Name - Portfolio</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>Your Name - Cybersecurity Portfolio</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #0F2027;
+      color: #f8f5ee;
+    }
+
+    /* Splash Screen */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 1s ease-out;
+    }
+
+    .splash-content h1 {
+      font-size: 2.5rem;
+      margin: 0;
+    }
+
+    .splash-content p {
+      font-size: 1.2rem;
+      margin: 0.5rem 0 0 0;
+    }
+
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #main-content {
+      display: none;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, #0F2027, #203A43, #2C5364);
+      transition: background 0.2s ease-out;
+    }
+
+    #splash.hidden + #main-content {
+      display: block;
+    }
+
+    header {
+      background: rgba(0,0,0,0.6);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    nav a {
+      color: #f8f5ee;
+      margin: 0 0.5rem;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      padding: 2rem;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+  </style>
 </head>
 <body>
   <!-- Splash Screen -->
@@ -29,12 +115,21 @@
     </header>
     <main>
       <section>
-        <h2>Welcome to my portfolio</h2>
-        <p>This is the home page content that appears after the intro animation.</p>
+        <h2>Welcome</h2>
+        <p>This is the home page content that appears after the intro animation. You can customize this section with your own text, images, or links.</p>
+      </section>
+      <section style="height:1000px;">
+        <p>Scroll down to test the gradient background.</p>
       </section>
     </main>
   </div>
 
-  <script src="js/splash.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        document.getElementById('splash').classList.add('hidden');
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
