@@ -174,44 +174,48 @@
 
     .main {
       padding: 2rem;
-      margin-left: 380px; /* aligns with sidebar */
+      margin-left: 370px;
       position: relative;
       z-index: 2;
+      max-width: 1400px;
     }
 
-    .main-grid {
+    .grid-cards {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
-      padding: 0 1.5rem;
+      margin-top: 1.5rem;
     }
     
-    .main-grid section {
+    .card {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
       padding: 1.5rem;
       box-sizing: border-box;
-      min-height: 300px; /* taller boxes */
-      transition: background 0.2s, border 0.2s;
+      text-align: center;
+      min-height: 150px;
+      transition: transform 0.2s, background 0.2s, border 0.2s;
     }
     
-    .main-grid section:hover {
+    .card:hover {
+      transform: translateY(-5px);
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .main-grid h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
+    .card h3 {
+      margin: 0;
+      font-size: 1.5rem;
       color: #fff;
     }
     
-    .main-grid p {
+    .card p {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.9rem;
       color: #ccc;
-      font-size: 0.95rem;
     }
-    
+
     section {
       margin-bottom: 2rem;
     }
@@ -239,23 +243,34 @@
         <a href="#">Contact</a>
       </nav>
     </header>
-    <main class="main-grid">
-      <section class="credentials">
-        <h2>Credentials</h2>
-        <p>Brief overview of your certifications, degrees, or relevant qualifications.</p>
-      </section>
-      <section class="description">
-        <h2>Description</h2>
-        <p>A short bio describing who you are, your mission, and your focus areas.</p>
-      </section>
-      <section class="projects">
-        <h2>Featured Projects</h2>
-        <p>Showcase a few of your most important projects.</p>
-      </section>
-      <section class="experience">
-        <h2>Previous Experience</h2>
-        <p>Summary of your professional history, roles, and companies.</p>
-      </section>
+    <main>
+      <h2>My Professional Highlights</h2>
+      <div class="grid-cards">
+        <div class="card">
+          <h3>100+</h3>
+          <p>Completed Projects</p>
+        </div>
+        <div class="card">
+          <h3>Web Security</h3>
+          <p>Specialization</p>
+        </div>
+        <div class="card">
+          <h3>50+</h3>
+          <p>Satisfied Clients</p>
+        </div>
+        <div class="card">
+          <h3>6</h3>
+          <p>Years of Experience</p>
+        </div>
+        <div class="card">
+          <h3>Featured Projects</h3>
+          <p>View All</p>
+        </div>
+        <div class="card">
+          <h3>Contact Me</h3>
+          <p>Get in Touch</p>
+        </div>
+      </div>
     </main>
   </div>
 
