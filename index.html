@@ -12,7 +12,6 @@
       font-family: Arial, sans-serif;
       color: #333;
       overflow: hidden;
-      background: #f8f8f8;
     }
 
     /* Splash Screen */
@@ -53,21 +52,14 @@
       display: none;
       min-height: 100vh;
       position: relative;
-      background:
-        radial-gradient(
-          circle at bottom right,
-          rgba(142,197,252,0.4) 0%,
-          rgba(224,195,252,0.3) 25%,
-          rgba(248,248,248,0) 60%
-        ),
-        linear-gradient(
-          135deg,
-          #f8f8f8 0%,
-          #eeeeee 20%,
-          #f0f0f0 40%,
-          #eaeaea 60%,
-          #f8f8f8 80%
-        );
+      background: linear-gradient(
+        135deg,
+        #f8f8f8 0%,
+        #e0e0e0 15%,
+        #8ec5fc 40%,
+        #e0c3fc 60%,
+        #f8f8f8 85%
+      );
     }
 
     #splash.hidden + #main-content {
@@ -85,7 +77,7 @@
       background: linear-gradient(
         120deg,
         rgba(255,255,255,0) 0%,
-        rgba(255,255,255,0.15) 50%,
+        rgba(255,255,255,0.2) 50%,
         rgba(255,255,255,0) 100%
       );
       animation: sheen 6s linear infinite;
@@ -98,7 +90,7 @@
     }
 
     header {
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.8);
       padding: 1rem;
       position: sticky;
       top: 0;
