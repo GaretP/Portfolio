@@ -172,18 +172,20 @@
       background: #ddd; /* soft hover without color change */
     }
 
-    main {
+    .main {
       padding: 2rem;
-      margin-left: 270px;
+      margin-left: 270px; /* aligns with sidebar */
+      position: relative;
+      z-index: 2;
     }
 
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
       gap: 1.5rem;
-      margin: 2rem 0;
-      padding-right: 2rem;
+      max-width: 1000px;   /* set a reasonable max width */
+      margin: 2rem auto;   /* center the grid horizontally */
+      padding: 0 1rem;     /* small side padding for breathing room */
     }
     
     .main-grid section {
@@ -192,7 +194,7 @@
       border-radius: 8px;
       padding: 1.5rem;
       box-sizing: border-box;
-      min-height: 200px;
+      min-height: 250px;   /* taller boxes */
       transition: background 0.2s, border 0.2s;
     }
     
