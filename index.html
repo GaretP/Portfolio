@@ -10,8 +10,8 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      background: #0F2027;
       color: #f8f5ee;
+      overflow: hidden;
     }
 
     /* Splash Screen */
@@ -21,7 +21,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(to bottom, #1e3c72, #2a5298);
+      background: linear-gradient(135deg, #ff5f6d, #ffc371, #47a3f3);
+      background-size: 600% 600%;
+      animation: gradientMove 15s ease infinite;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -49,8 +51,9 @@
     #main-content {
       display: none;
       min-height: 100vh;
-      background: linear-gradient(to bottom, #0F2027, #203A43, #2C5364);
-      transition: background 0.2s ease-out;
+      background: linear-gradient(135deg, #ff5f6d, #ffc371, #47a3f3);
+      background-size: 600% 600%;
+      animation: gradientMove 15s ease infinite;
     }
 
     #splash.hidden + #main-content {
@@ -58,7 +61,7 @@
     }
 
     header {
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.4);
       padding: 1rem;
       position: sticky;
       top: 0;
@@ -90,6 +93,12 @@
     section {
       margin-bottom: 2rem;
     }
+
+    @keyframes gradientMove {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
   </style>
 </head>
 <body>
@@ -116,10 +125,10 @@
     <main>
       <section>
         <h2>Welcome</h2>
-        <p>This is the home page content that appears after the intro animation. You can customize this section with your own text, images, or links.</p>
+        <p>This is your portfolio home page content. You can customize this section with your own text, images, or links.</p>
       </section>
       <section style="height:1000px;">
-        <p>Scroll down to test the gradient background.</p>
+        <p>Scroll down to see more content.</p>
       </section>
     </main>
   </div>
