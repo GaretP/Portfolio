@@ -53,6 +53,7 @@
       display: none;
       min-height: 100vh;
       position: relative;
+      animation: gradientShift 15s ease infinite;
       background: radial-gradient(
         circle at bottom right,
         #8ec5fc 0%,
@@ -60,13 +61,45 @@
         #ffffff 60%,
         #ffffff 100%
       );
+      background-size: 200% 200%;
+      background-repeat: no-repeat;
     }
 
     #splash.hidden + #main-content {
       display: block;
     }
 
-    /* Sheen overlay */
+    @keyframes gradientShift {
+      0% {
+        background: radial-gradient(
+          circle at bottom right,
+          #8ec5fc 0%,
+          #e0c3fc 25%,
+          #ffffff 60%,
+          #ffffff 100%
+        );
+      }
+      50% {
+        background: radial-gradient(
+          circle at bottom right,
+          #e0c3fc 0%,
+          #8ec5fc 25%,
+          #ffffff 60%,
+          #ffffff 100%
+        );
+      }
+      100% {
+        background: radial-gradient(
+          circle at bottom right,
+          #8ec5fc 0%,
+          #e0c3fc 25%,
+          #ffffff 60%,
+          #ffffff 100%
+        );
+      }
+    }
+
+    /* Sheen overlay when scrolling */
     #main-content::after {
       content: "";
       position: absolute;
@@ -86,7 +119,6 @@
       transition: opacity 0.3s ease;
     }
 
-    /* When active, trigger animation */
     #main-content.sheen::after {
       animation: sheen 1s linear forwards;
       opacity: 1;
@@ -101,9 +133,9 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 250px;
+      width: 300px;
       height: 100vh;
-      background: #f0f0f0; /* light gray, still in the white family */
+      background: #f0f0f0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -111,32 +143,32 @@
       box-sizing: border-box;
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     }
-    
+
     header h1 {
       margin: 0 0 1rem 0;
       font-size: 1.2rem;
       text-align: center;
       color: #333;
     }
-    
+
     nav {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     nav a {
       color: #333;
       text-decoration: none;
     }
-    
+
     nav a:hover {
       text-decoration: underline;
     }
-    
+
     main {
       padding: 2rem;
-      margin-left: 220px;
+      margin-left: 270px;
     }
 
     section {
@@ -181,7 +213,6 @@
       const splash = document.getElementById('splash');
       const main = document.getElementById('main-content');
 
-      // Hide splash after 2 seconds
       setTimeout(() => {
         splash.classList.add('hidden');
       }, 2000);
@@ -195,7 +226,7 @@
         clearTimeout(sheenTimeout);
         sheenTimeout = setTimeout(() => {
           main.classList.remove('sheen');
-        }, 1000); // Same duration as the sheen animation
+        }, 1000);
       });
     });
   </script>
