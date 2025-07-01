@@ -48,6 +48,7 @@
       pointer-events: none;
     }
 
+    /* Main Content */
     #main-content {
       display: none;
       min-height: 100vh;
@@ -79,8 +80,16 @@
         rgba(255,255,255,0.2) 50%,
         rgba(255,255,255,0) 100%
       );
-      animation: sheen 6s linear infinite;
       pointer-events: none;
+      opacity: 0;
+      transform: translateX(-50%);
+      transition: opacity 0.3s ease;
+    }
+
+    /* When active, trigger animation */
+    #main-content.sheen::after {
+      animation: sheen 1s linear forwards;
+      opacity: 1;
     }
 
     @keyframes sheen {
@@ -158,11 +167,26 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
+      const splash = document.getElementById('splash');
+      const main = document.getElementById('main-content');
+
+      // Hide splash after 2 seconds
       setTimeout(() => {
-        document.getElementById('splash').classList.add('hidden');
+        splash.classList.add('hidden');
       }, 2000);
+
+      let sheenTimeout;
+
+      window.addEventListener('scroll', () => {
+        if (!main.classList.contains('sheen')) {
+          main.classList.add('sheen');
+        }
+        clearTimeout(sheenTimeout);
+        sheenTimeout = setTimeout(() => {
+          main.classList.remove('sheen');
+        }, 1000); // Same duration as the sheen animation
+      });
     });
   </script>
 </body>
 </html>
-
