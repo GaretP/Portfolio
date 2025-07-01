@@ -14,8 +14,8 @@
       background: #f8f5ee;
     }
 
-    body::before {
-      content: "";
+    /* Fixed gradient background div */
+    .background-gradient {
       position: fixed;
       bottom: 0;
       right: 0;
@@ -28,6 +28,7 @@
         transparent 60%
       );
       z-index: -1;
+      pointer-events: none;
     }
 
     /* Splash Screen */
@@ -111,6 +112,9 @@
   </style>
 </head>
 <body>
+  <!-- Gradient Background -->
+  <div class="background-gradient"></div>
+
   <!-- Splash Screen -->
   <div id="splash">
     <div class="splash-content">
