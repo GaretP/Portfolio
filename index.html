@@ -128,13 +128,13 @@
       left: 0;
       width: 250px;
       height: 100vh;
-      background: #1b1b1b;
+      background: #f0f0f0; /* your current background color */
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2rem 1rem;
       box-sizing: border-box;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
       z-index: 2;
     }
     
@@ -142,14 +142,14 @@
       margin: 0 0 0.5rem 0;
       font-size: 1.2rem;
       text-align: center;
-      color: #fff;
+      color: #333; /* your existing color */
     }
     
     header p {
       margin: 0 0 1.5rem 0;
       font-size: 0.9rem;
       text-align: center;
-      color: #aaa;
+      color: #555; /* subtle subtitle color */
     }
     
     nav {
@@ -160,16 +160,15 @@
     }
     
     nav a {
-      color: #ddd;
+      color: #333; /* same as before */
       text-decoration: none;
       padding: 0.5rem 1rem;
       border-radius: 4px;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s;
     }
     
     nav a:hover {
-      background: #333;
-      color: #fff;
+      background: #ddd; /* soft hover without color change */
     }
 
     main {
