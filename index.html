@@ -179,41 +179,64 @@
       z-index: 2;
       max-width: 1400px;
     }
-
-    .grid-cards {
+    
+    .main-quadrants {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
       gap: 1.5rem;
-      margin-top: 1.5rem;
+      margin: 2rem 0;
+      padding: 0 1rem;
     }
     
-    .card {
+    .main-quadrants section {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
       padding: 1.5rem;
       box-sizing: border-box;
-      text-align: center;
-      min-height: 150px;
-      transition: transform 0.2s, background 0.2s, border 0.2s;
+      min-height: 200px;
+      transition: background 0.2s, border 0.2s;
     }
     
-    .card:hover {
-      transform: translateY(-5px);
+    .main-quadrants section:hover {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .card h3 {
-      margin: 0;
-      font-size: 1.5rem;
+    .main-quadrants h2 {
+      margin-top: 0;
+      font-size: 1.4rem;
       color: #fff;
     }
     
-    .card p {
-      margin: 0.5rem 0 0 0;
-      font-size: 0.9rem;
+    .main-quadrants p, .main-quadrants li, .main-quadrants a {
       color: #ccc;
+      font-size: 0.95rem;
+    }
+    
+    .main-quadrants ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .main-quadrants li {
+      margin: 0.5rem 0;
+    }
+    
+    .main-quadrants a {
+      display: inline-block;
+      margin-top: 1rem;
+      text-decoration: none;
+      background: rgba(255,255,255,0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    
+    .main-quadrants a:hover {
+      background: rgba(255,255,255,0.2);
     }
 
     section {
@@ -243,34 +266,43 @@
         <a href="#">Contact</a>
       </nav>
     </header>
-    <main>
-      <h2>My Professional Highlights</h2>
-      <div class="grid-cards">
-        <div class="card">
-          <h3>100+</h3>
-          <p>Completed Projects</p>
-        </div>
-        <div class="card">
-          <h3>Web Security</h3>
-          <p>Specialization</p>
-        </div>
-        <div class="card">
-          <h3>50+</h3>
-          <p>Satisfied Clients</p>
-        </div>
-        <div class="card">
-          <h3>6</h3>
-          <p>Years of Experience</p>
-        </div>
-        <div class="card">
-          <h3>Featured Projects</h3>
-          <p>View All</p>
-        </div>
-        <div class="card">
-          <h3>Contact Me</h3>
-          <p>Get in Touch</p>
-        </div>
-      </div>
+    <main class="main-quadrants">
+      <!-- Top Left Quadrant -->
+      <section class="top-left">
+        <h2>Professional Overview</h2>
+        <ul>
+          <li><strong>100+</strong> Completed Projects</li>
+          <li><strong>Cybersecurity Specialist</strong></li>
+          <li><strong>5</strong> Certifications</li>
+          <li><strong>6</strong> Years Experience</li>
+        </ul>
+      </section>
+    
+      <!-- Top Right Quadrant -->
+      <section class="top-right">
+        <h2>About Me</h2>
+        <p>
+          I am a cybersecurity specialist focused on securing modern infrastructures.
+          My mission is to help organizations protect their digital assets with robust solutions.
+        </p>
+      </section>
+    
+      <!-- Bottom Left Quadrant -->
+      <section class="bottom-left">
+        <h2>View Projects</h2>
+        <p>
+          Explore my portfolio of completed engagements across multiple industries.
+        </p>
+        <a href="#">View All Projects</a>
+      </section>
+    
+      <!-- Bottom Right Quadrant -->
+      <section class="bottom-right">
+        <h2>Trusted By</h2>
+        <p>
+          Companies and clients who rely on my expertise.
+        </p>
+      </section>
     </main>
   </div>
 
