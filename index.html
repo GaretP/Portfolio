@@ -391,30 +391,32 @@
         splashText.style.opacity = 0;
     
         setTimeout(() => {
+          // Update text
           splashText.textContent = messages[index];
+          // Fade in quickly
           splashText.style.opacity = 1;
     
           index++;
     
           if (index < messages.length) {
-            // Show very briefly before next fade
-            setTimeout(showNextMessage, 300);
+            // Show this word briefly before fading out again
+            setTimeout(showNextMessage, 500);
           } else {
-            // After last message, wait 1s then hide splash
+            // After last message, wait 1s before hiding splash
             setTimeout(() => {
               splash.classList.add('hidden');
             }, 1000);
           }
-        }, 150); // fade out duration
+        }, 200); // fade out duration
       }
     
-      // Show first message immediately
+      // Start the cycle
       splashText.textContent = messages[0];
       splashText.style.opacity = 1;
       index = 1;
     
       // Schedule next fade out
-      setTimeout(showNextMessage, 300);
+      setTimeout(showNextMessage, 500);
     });
   </script>
 </body>
