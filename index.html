@@ -36,7 +36,7 @@
       font-weight: 300;
       color: #333;
       opacity: 0;
-      transition: opacity 0.15s ease;
+      transition: opacity 0.1s ease;
     }
 
     #splash.hidden {
@@ -285,8 +285,7 @@
       color: #000;
       margin-top: 20rem; /* You can adjust this */
     }
-
-
+    
     section {
       margin-bottom: 2rem;
     }
@@ -370,18 +369,6 @@
   </div>
 
   <script>
-
-      window.addEventListener('scroll', () => {
-        if (!main.classList.contains('sheen')) {
-          main.classList.add('sheen');
-        }
-        clearTimeout(sheenTimeout);
-        sheenTimeout = setTimeout(() => {
-          main.classList.remove('sheen');
-        }, 1000);
-      });
-    });
-    
     window.addEventListener("DOMContentLoaded", () => {
       const splash = document.getElementById('splash');
       const splashText = document.getElementById('splash-text');
