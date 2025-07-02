@@ -42,7 +42,7 @@
     #splash.hidden {
       opacity: 0;
       pointer-events: none;
-      transition: opacity 5s ease;
+      transition: opacity 1s ease;
     }
 
     #main-content::before {
@@ -412,28 +412,30 @@
       let index = 0;
     
       function showNextMessage() {
-        // Fade out quickly
+        // Fade out current text
         splashText.style.opacity = 0;
     
-        // Wait for fade out
         setTimeout(() => {
+          // Update text
           splashText.textContent = messages[index];
+          // Fade in new text
           splashText.style.opacity = 1;
+    
           index++;
     
           if (index < messages.length) {
-            // Show briefly, then next
-            setTimeout(showNextMessage, 500);
+            // Show this word for 1.5s before fading out again
+            setTimeout(showNextMessage, 1500);
           } else {
-            // Final fade out
+            // ✅ ALL messages have shown, now wait before fading splash
             setTimeout(() => {
               splash.classList.add('hidden');
-            }, 5000);
+            }, 2000); // How long to keep splash visible after last message
           }
-        }, 200); // Fade out duration
+        }, 800); // Fade out duration
       }
     
-      // Start animation
+      // IMPORTANT: start the cycle AFTER page loads, no auto-hide timer here
       showNextMessage();
     });
   </script>
