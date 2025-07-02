@@ -36,13 +36,13 @@
       font-weight: 300;
       color: #333;
       opacity: 0;
-      transition: opacity 0.1s ease;
+      transition: opacity 0.2s ease;
     }
 
     #splash.hidden {
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.5s ease;
+      transition: opacity 1s ease;
     }
 
     #main-content::before {
@@ -281,7 +281,7 @@
     }
     
     .top-left .mini-card .number {
-      font-size: 4rem;
+      font-size: 3.5rem;
       font-weight: bold;
       color: #000;
       margin-top: 20rem; /* You can adjust this */
@@ -393,7 +393,7 @@
         }, 1000);
       });
     });
-
+    
     window.addEventListener("DOMContentLoaded", () => {
       const splash = document.getElementById('splash');
       const splashText = document.getElementById('splash-text');
@@ -412,28 +412,28 @@
       let index = 0;
     
       function showNextMessage() {
-        // Fade out almost instantly
+        // Fade out quickly
         splashText.style.opacity = 0;
     
+        // Wait for fade out
         setTimeout(() => {
           splashText.textContent = messages[index];
           splashText.style.opacity = 1;
-    
           index++;
     
           if (index < messages.length) {
-            // Barely visible before next
-            setTimeout(showNextMessage, 200);
+            // Show briefly, then next
+            setTimeout(showNextMessage, 500);
           } else {
-            // Very short pause, then hide splash
+            // Final fade out
             setTimeout(() => {
               splash.classList.add('hidden');
-            }, 200);
+            }, 500);
           }
-        }, 100); // Fade out duration
+        }, 200); // Fade out duration
       }
     
-      // Start the cycle
+      // Start animation
       showNextMessage();
     });
   </script>
