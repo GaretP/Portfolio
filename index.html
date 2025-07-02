@@ -394,7 +394,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       const splash = document.getElementById('splash');
       const splashText = document.getElementById('splash-text');
-
+    
       const messages = [
         "Hello",
         "Hola",
@@ -405,41 +405,21 @@
         "안녕하세요",
         "مرحبا"
       ];
-
+    
       let index = 0;
-
+    
       function showNextMessage() {
-        // Fade out
-        splashText.style.opacity = 0;
-
-        setTimeout(() => {
-          // Update text
-          splashText.textContent = messages[index];
-
-          // Fade in
-          splashText.style.opacity = 1;
-
-          index++;
-
-          if (index < messages.length) {
-            // Show this message for 1.5 seconds before fading out again
-            setTimeout(showNextMessage, 1500);
-          } else {
-            // After last message, wait 2 seconds before hiding splash
-            setTimeout(() => {
-              splash.classList.add('hidden');
-            }, 2000);
-          }
-        }, 800); // fade out duration
+        splashText.textContent = messages[index];
+        index++;
+        if (index < messages.length) {
+          setTimeout(showNextMessage, 1500);
+        } else {
+          // DO NOTHING after last message
+        }
       }
-
-      // Start the cycle
-      // First message appears right away:
+    
       splashText.textContent = messages[0];
-      splashText.style.opacity = 1;
       index = 1;
-
-      // Schedule next fade out
       setTimeout(showNextMessage, 1500);
     });
   </script>
