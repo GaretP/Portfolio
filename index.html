@@ -30,19 +30,15 @@
       opacity: 1;
       transition: opacity 1s ease-out;
     }
-
-    .splash-content h1 {
-      font-size: 2.5rem;
-      margin: 0;
+    
+    #splash h1 {
+      font-size: 3rem;
+      font-weight: 300;
       color: #333;
+      opacity: 0;
+      transition: opacity 1s ease;
     }
-
-    .splash-content p {
-      font-size: 1.2rem;
-      margin: 0.5rem 0 0 0;
-      color: #333;
-    }
-
+    
     #splash.hidden {
       opacity: 0;
       pointer-events: none;
@@ -396,6 +392,47 @@
           main.classList.remove('sheen');
         }, 1000);
       });
+    });
+
+      window.addEventListener("DOMContentLoaded", () => {
+      const splash = document.getElementById('splash');
+      const splashText = document.getElementById('splash-text');
+  
+      const messages = [
+        "Hello",
+        "Hola",
+        "Bonjour",
+        "Hallo",
+        "Ciao",
+        "こんにちは",
+        "안녕하세요",
+        "مرحبا"
+      ];
+  
+      let index = 0;
+  
+      function showNextMessage() {
+        splashText.style.opacity = 0;
+  
+        setTimeout(() => {
+          splashText.textContent = messages[index];
+          splashText.style.opacity = 1;
+  
+          index++;
+  
+          if (index < messages.length) {
+            setTimeout(showNextMessage, 1500);
+          } else {
+            // All messages shown - fade out splash
+            setTimeout(() => {
+              splash.classList.add('hidden');
+            }, 1500);
+          }
+        }, 500);
+      }
+  
+      // Start animation
+      showNextMessage();
     });
   </script>
 </body>
