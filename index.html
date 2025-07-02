@@ -258,11 +258,10 @@
     }
 
     .top-left .mini-grid {
-      flex: 1; /* fills the vertical space inside .top-left */
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, 1fr); /* force 2 columns */
       gap: 1rem;
-      margin-top: 0; /* remove margin if you don't want extra spacing on top */
+      margin-top: 1rem;
     }
     
     .top-left .mini-card {
@@ -270,12 +269,9 @@
       border: 1px solid #ddd;
       border-radius: 6px;
       padding: 1.5rem;
-      height: 100%;              /* THIS makes each card fill its grid cell */
-      display: flex;             /* center the content inside */
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      box-sizing: border-box;
+      min-height: 160px;
+      transition: background 0.2s, border 0.2s;
+      text-align: center;
     }
     
     .mini-card:hover {
