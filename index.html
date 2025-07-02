@@ -257,8 +257,9 @@
     
     .top-left .mini-card {
       display: flex;
-      justify-content: center;  /* center horizontally */
-      align-items: center;      /* center vertically */
+      flex-direction: column;
+      justify-content: space-between; /* separate top and bottom */
+      align-items: center;            /* horizontally center everything */
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -281,7 +282,9 @@
     }
     
     .top-left .mini-card p {
-      display: none;
+      font-size: 1.1rem;
+      color: #555;
+      margin: 0;
     }
     
     .top-left .mini-card h3 .number {
