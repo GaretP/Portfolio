@@ -36,8 +36,9 @@
       font-weight: 300;
       color: #333;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.1s ease;
     }
+
     
     #splash.hidden {
       opacity: 0;
@@ -412,28 +413,28 @@
       let index = 0;
     
       function showNextMessage() {
-        // Fade out quickly
+        // Fade out almost instantly
         splashText.style.opacity = 0;
     
-        // Wait for fade out
         setTimeout(() => {
           splashText.textContent = messages[index];
           splashText.style.opacity = 1;
+    
           index++;
     
           if (index < messages.length) {
-            // Show briefly, then next
-            setTimeout(showNextMessage, 500);
+            // Barely visible before next
+            setTimeout(showNextMessage, 200);
           } else {
-            // Final fade out
+            // Very short pause, then hide splash
             setTimeout(() => {
               splash.classList.add('hidden');
-            }, 500);
+            }, 200);
           }
-        }, 200); // Fade out duration
+        }, 100); // Fade out duration
       }
     
-      // Start animation
+      // Start the cycle
       showNextMessage();
     });
   </script>
