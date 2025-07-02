@@ -256,13 +256,16 @@
     }
     
     .top-left .mini-card {
+      display: flex;
+      justify-content: center;  /* center horizontally */
+      align-items: center;      /* center vertically */
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: 6px;
-      padding: 1.25rem;       /* more internal space */
-      min-height: 140px;      /* force more vertical size */
-      text-align: center;
+      padding: 1.5rem;
+      min-height: 160px;
       transition: background 0.2s, border 0.2s;
+      text-align: center;
     }
     
     .top-left .mini-card:hover {
@@ -271,17 +274,16 @@
     }
     
     .top-left .mini-card h3 {
-      font-size: 1.8rem;   /* much bigger */
-      font-weight: bold;   /* make it stand out */
-      margin: 0;
+      font-size: 2.5rem;
+      font-weight: bold;
       color: #000;
+      margin: 0;
     }
     
     .top-left .mini-card p {
-      margin: 0.25rem 0 0 0;
-      font-size: 0.85rem;
-      color: #333;
-
+      display: none;
+    }
+    
     .top-left .mini-card h3 .number {
       display: block;
       font-size: 2.5rem;
