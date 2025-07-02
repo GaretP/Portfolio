@@ -256,9 +256,10 @@
     }
     
     .top-left .mini-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;           /* horizontal centering */
+      display: grid;
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      justify-items: center;
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -290,9 +291,9 @@
       font-size: 2.5rem;
       font-weight: bold;
       color: #000;
-      margin-top: auto; /* push it to the vertical center of remaining space */
-      margin-bottom: auto;
+      align-self: center; /* center vertically within its grid row */
     }
+
 
     section {
       margin-bottom: 2rem;
