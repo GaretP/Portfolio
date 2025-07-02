@@ -36,7 +36,7 @@
       font-weight: 300;
       color: #333;
       opacity: 0;
-      transition: opacity 1s ease;
+      transition: opacity 0.4s ease;
     }
     
     #splash.hidden {
@@ -394,10 +394,10 @@
       });
     });
 
-      window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", () => {
       const splash = document.getElementById('splash');
       const splashText = document.getElementById('splash-text');
-  
+    
       const messages = [
         "Hello",
         "Hola",
@@ -408,30 +408,36 @@
         "안녕하세요",
         "مرحبا"
       ];
-  
+    
       let index = 0;
-  
+    
       function showNextMessage() {
+        // Fade out fast
         splashText.style.opacity = 0;
-  
+    
+        // Wait for fade out transition (0.4s)
         setTimeout(() => {
+          // Update text
           splashText.textContent = messages[index];
+    
+          // Fade in fast
           splashText.style.opacity = 1;
-  
+    
           index++;
-  
+    
           if (index < messages.length) {
-            setTimeout(showNextMessage, 1500);
+            // Show text for 1 second before next fade
+            setTimeout(showNextMessage, 1000);
           } else {
-            // All messages shown - fade out splash
+            // After last message, pause 1 second, then fade out splash
             setTimeout(() => {
               splash.classList.add('hidden');
-            }, 1500);
+            }, 1000);
           }
-        }, 500);
+        }, 400); // Match fade-out duration
       }
-  
-      // Start animation
+    
+      // Start the sequence
       showNextMessage();
     });
   </script>
