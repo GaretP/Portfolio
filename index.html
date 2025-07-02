@@ -258,8 +258,7 @@
     .top-left .mini-card {
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* separate top and bottom */
-      align-items: center;            /* horizontally center everything */
+      align-items: center;           /* horizontal centering */
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -275,7 +274,7 @@
     }
     
     .top-left .mini-card h3 {
-      font-size: 2.5rem;
+      font-size: 1.2rem;
       font-weight: bold;
       color: #000;
       margin: 0;
@@ -287,11 +286,12 @@
       margin: 0;
     }
     
-    .top-left .mini-card h3 .number {
-      display: block;
+    .top-left .mini-card .number {
       font-size: 2.5rem;
       font-weight: bold;
-      text-align: center;
+      color: #000;
+      margin-top: auto; /* push it to the vertical center of remaining space */
+      margin-bottom: auto;
     }
 
     section {
