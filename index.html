@@ -215,18 +215,17 @@
       color: #222;
     }
 
-    .main-quadrants .mini-grid {
+   .main-quadrants .mini-grid {
       background: #FDFCFA;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 1rem;
+      padding: 1.5rem;
+      box-sizing: border-box;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: 1fr 1fr;
       gap: 1rem;
-      height: 100%;
-      box-sizing: border-box;
-    }
+   }
     
     .mini-grid .mini-card {
       background: #fff;
@@ -238,7 +237,19 @@
       align-items: center;
       height: 100%;
     }
-    
+
+    .mini-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      box-sizing: border-box;
+    }
+        
     .main-quadrants p, .main-quadrants li, .main-quadrants a {
       color: #222;
       font-size: 0.95rem;
