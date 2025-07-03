@@ -299,6 +299,32 @@
     section {
       margin-bottom: 2rem;
     }
+
+    #invert-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    #invert-toggle:hover {
+      background: #555;
+    }
+
+    /* Invert everything when .inverted is applied to <body> */
+    .inverted {
+      filter: invert(1);
+    }
+    
+    /* Optional: Flip images back to normal so they don't look like negatives */
+    .inverted img {
+      filter: invert(1);
   </style>
 </head>
 <body>
@@ -307,6 +333,7 @@
     <h1 id="splash-text">Hello</h1>
   </div>
 
+  <button id="invert-toggle">Invert Colors</button>
   <!-- Main Content -->
   <div id="main-content">
     <header>
@@ -422,6 +449,10 @@
     
       // Schedule next fade out
       setTimeout(showNextMessage, 500);
+    });
+
+    document.getElementById('invert-toggle').addEventListener('click', function() {
+      document.body.classList.toggle('inverted');
     });
   </script>
 </body>
