@@ -304,6 +304,32 @@
     section {
       margin-bottom: 2rem;
     }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .project-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      box-sizing: border-box;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .project-card:hover {
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    @media (min-width: 600px) {
+    .projects-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   </style>
 </head>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -333,7 +359,7 @@
         <!-- Top Left Quadrant -->
           <div class="mini-grid">
             <div class="mini-card">
-              <h3><span class="number">15</span></h3>
+              <h3><span class="number">15+</span></h3>
               <p>Completed Projects</p>
             </div>
             <div class="mini-card">
@@ -365,9 +391,20 @@
         <!-- Bottom Left Quadrant -->
         <section class="bottom-left">
           <h2>View Projects</h2>
-          <p>
-            Explore my portfolio of completed engagements across multiple industries.
-          </p>
+          <div class="projects-grid">
+            <div class="project-card">
+              <h3>Network Security Audit</h3>
+              <p>Comprehensive assessment of enterprise network infrastructure.</p>
+            </div>
+            <div class="project-card">
+              <h3>Custom Mapping Platform</h3>
+              <p>Developed an interactive cartographic visualization tool.</p>
+            </div>
+            <div class="project-card">
+              <h3>Threat Intelligence Automation</h3>
+              <p>Automated threat feeds and alerting pipelines.</p>
+            </div>
+          </div>
           <a href="#">View All Projects</a>
         </section>
     
@@ -428,6 +465,18 @@
     
       // Schedule next fade out
       setTimeout(showNextMessage, 500);
+    });
+
+    document.querySelectorAll('.project-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        card.style.transform = `rotateX(${(-y / 20)}deg) rotateY(${(x / 20)}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      });
     });
   </script>
 </body>
