@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>False Positive Conditioning: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body { background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg); font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Conditioning timeline */
+    .timeline-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .timeline-row { display: grid; grid-template-columns: 0.8fr 1.5fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .timeline-row:last-child { border-bottom: none; }
+    .timeline-row.header { background: var(--surface2); }
+    .timeline-cell { padding: 0.8rem 1rem; font-size: 0.83rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .timeline-cell:last-child { border-right: none; }
+    .timeline-row.header .timeline-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .timeline-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.2rem; }
+    .time-badge { font-family: var(--font-mono); font-size: 0.72rem; }
+    .time-high { color: #4ade80; }
+    .time-med { color: #fbbf24; }
+    .time-low { color: #f87171; }
+    .time-exploit { color: #a78bfa; }
+
+    /* Scenario cards */
+    .scenario-list { display: flex; flex-direction: column; gap: 1rem; }
+    .scenario-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+    .scenario-card:hover { border-color: var(--border-hi); }
+    .scenario-header { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .scenario-num { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; }
+    .scenario-title { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+    .scenario-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .s-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.1rem; }
+    .scenario-body p { font-size: 0.87rem !important; line-height: 1.65 !important; }
+    .indicator-box { background: rgba(125,211,252,0.05); border: 1px solid rgba(125,211,252,0.2); border-radius: 6px; padding: 0.65rem 0.9rem; }
+    .indicator-box .s-label { color: var(--accent2); }
+    .indicator-box p { font-size: 0.84rem !important; color: var(--muted); }
+
+    /* Metrics table */
+    .metrics-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .metrics-row { display: grid; grid-template-columns: 1.5fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .metrics-row:last-child { border-bottom: none; }
+    .metrics-row.header { background: var(--surface2); }
+    .metrics-cell { padding: 0.8rem 1.1rem; font-size: 0.84rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .metrics-cell:last-child { border-right: none; }
+    .metrics-row.header .metrics-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .metrics-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.2rem; }
+    .flag-text { font-family: var(--font-mono); font-size: 0.72rem; color: #fbbf24; }
+
+    /* Controls */
+    .control-list { display: flex; flex-direction: column; gap: 0.85rem; }
+    .control-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.2s; }
+    .control-item:hover { border-color: var(--border-hi); }
+    .control-num { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; padding-top: 0.1rem; min-width: 1.5rem; }
+    .control-content h4 { font-size: 0.9rem; color: var(--text); font-weight: 500; margin-bottom: 0.35rem; }
+    .control-content p { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Detection</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">May 2026</span>
+        <span class="post-read-time">· 15 min read</span>
+      </div>
+      <h1>False Positive Conditioning: When Alert Noise Becomes an Attack Vector</h1>
+      <p class="post-lead">The alert fired 847 times in 90 days. Every single one was a false positive. On day 91, it fired for a real intrusion. The analyst closed it in four seconds. The dwell time from that moment was eleven days. This is not an alert fatigue story. It is a conditioning story, and the difference matters because one has an accidental cause and the other can have a deliberate one.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>Alert Fatigue vs. False Positive Conditioning</h2>
+
+      <p>Alert fatigue is widely discussed, the cognitive overload from high alert volumes that causes analysts to triage less carefully and dismiss more quickly. It is framed as an operational problem with operational causes: too many rules, too much noise, insufficient tuning. False positive conditioning is related but distinct, and more dangerous. Where alert fatigue is diffuse overload across alert categories, conditioning is category-specific learned dismissal: the analyst who has processed 400 false positives of the same type has learned, accurately, that this alert type requires no real investigation.</p>
+
+      <p>The threat actor dimension: if conditioning can occur accidentally through poor rule quality, it can also be induced deliberately. An attacker who understands the SOC's alert categories can generate benign-looking activity that matches a high-volume false positive pattern, training analysts to dismiss that category before using it as cover for malicious activity. Most SOC programs have no mechanism to detect whether analyst dismissal patterns have been influenced by deliberate pre-conditioning activity.</p>
+
+      <div class="callout">
+        <span class="callout-label">The distinction in one sentence</span>
+        <p>Conditioning converts an analyst's learned experience, which is valuable, into a category-specific blind spot, which is exploitable. The same cognitive process that makes senior analysts fast makes them selectively vulnerable to any attacker who understands which categories have been conditioned.</p>
+      </div>
+
+      <p class="section-eyebrow">// cognitive</p>
+      <h2>The Conditioning Timeline: What It Looks Like in the Data</h2>
+
+      <p>The psychological mechanism is operant conditioning, specifically, extinction through non-reinforcement. When an analyst investigates an alert type repeatedly and finds no malicious activity, the investigative behavior is extinguished. This is rational adaptive behavior. The problem is when the learned dismissal pattern becomes automatic rather than deliberate, when the confirmation step is dropped entirely.</p>
+
+      <div class="timeline-table">
+        <div class="timeline-row header">
+          <div class="timeline-cell">Phase</div>
+          <div class="timeline-cell">What happens</div>
+          <div class="timeline-cell">Analyst behavior</div>
+          <div class="timeline-cell">Triage time</div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-cell"><strong>Phase 1</strong>Day 1–10</div>
+          <div class="timeline-cell">Alert fires. Category unfamiliar. Every instance receives deliberate investigation, parent process, command line, network activity, user context.</div>
+          <div class="timeline-cell">Full investigation</div>
+          <div class="timeline-cell"><span class="time-badge time-high">8–15 min</span></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-cell"><strong>Phase 2</strong>Day 11–30</div>
+          <div class="timeline-cell">100% FP rate established. Analyst recognizes the pattern. Investigation shortens to confirmation of the known benign explanation.</div>
+          <div class="timeline-cell">Pattern confirmation</div>
+          <div class="timeline-cell"><span class="time-badge time-med">2–3 min</span></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-cell"><strong>Phase 3</strong>Day 31–90</div>
+          <div class="timeline-cell">Category associated with "benign." Alert seen → category recognized → dismissed. Confirmation step dropped. Conditioning spreads through social learning within the team.</div>
+          <div class="timeline-cell">Automatic dismissal</div>
+          <div class="timeline-cell"><span class="time-badge time-low">4–8 sec</span></div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-cell"><strong>Exploitation</strong>Day 91+</div>
+          <div class="timeline-cell">Attacker uses the conditioned category as cover. Alert fires. Analyst dismisses in 4 seconds. Malicious activity proceeds undetected.</div>
+          <div class="timeline-cell">Dismissed as conditioned</div>
+          <div class="timeline-cell"><span class="time-badge time-exploit">Dwell begins</span></div>
+        </div>
+      </div>
+
+      <p>The social transmission dimension compounds the problem. Conditioning does not stay with the individual analyst, it propagates through the team. A new analyst who asks "what is this alert?" and receives "it's always benign, just close it" has been conditioned by proxy without experiencing the original false positive history. Well-intentioned knowledge sharing can institutionalize dismissal across analysts who have never independently verified the claim.</p>
+
+      <p class="section-eyebrow">// adversarial</p>
+      <h2>The Deliberate Induction Scenario</h2>
+
+      <p>Deliberate conditioning requires three things from the attacker: knowledge of the target SOC's detection rule categories, a mechanism to generate activity that triggers the target alert category without triggering other detection, and patience, the conditioning phase requires weeks to months before the category is reliably dismissed.</p>
+
+      <p>The prerequisites are achievable. Public Sigma repositories document alert categories and their logic. Vendor documentation describes default detection rule behavior. A single low-value compromised asset is sufficient to generate conditioning activity. The payoff, a detection category effectively disabled at the analyst layer, is high-value and persistent until someone notices the triage time trend.</p>
+
+      <p class="section-eyebrow">// scenarios</p>
+      <h2>Four Conditioning Scenarios</h2>
+
+      <div class="scenario-list">
+
+        <div class="scenario-card">
+          <div class="scenario-header">
+            <span class="scenario-num">S01</span>
+            <span class="scenario-title">Accidental conditioning via misconfigured rule</span>
+          </div>
+          <div class="scenario-body">
+            <div>
+              <div class="s-label">What happens</div>
+              <p>A PowerShell execution alert fires on every legitimate deployment script run by the software management platform, fifty alerts per day, all benign. Within three weeks analysts have stopped engaging with the category. A month later, an attacker's encoded PowerShell command fires the same rule and is dismissed in five seconds.</p>
+            </div>
+            <div class="indicator-box">
+              <div class="s-label">Detection indicator</div>
+              <p>Investigation time for the alert type falls from 8 minutes to under 10 seconds within 30 days of rule deployment without any corresponding tuning activity.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="scenario-card">
+          <div class="scenario-header">
+            <span class="scenario-num">S02</span>
+            <span class="scenario-title">Semi-deliberate conditioning via initial access foothold</span>
+          </div>
+          <div class="scenario-body">
+            <div>
+              <div class="s-label">What happens</div>
+              <p>An attacker establishes a foothold on a low-value externally accessible system and runs legitimate-looking administrative commands over 30 days, generating authentication, process execution, and network connection alerts that are individually explainable as normal administration. The SOC begins treating alerts from that host as noise. The attacker then uses the host as a lateral movement pivot, alerts from the pivot activity are dismissed under the established host-level noise association.</p>
+            </div>
+            <div class="indicator-box">
+              <div class="s-label">Detection indicator</div>
+              <p>Investigation time for alerts from a specific host drops to near-zero while investigation time for the same alert type from other hosts remains normal, anomalous per-source dismissal pattern.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="scenario-card">
+          <div class="scenario-header">
+            <span class="scenario-num">S03</span>
+            <span class="scenario-title">Deliberate category conditioning before targeted operation</span>
+          </div>
+          <div class="scenario-body">
+            <div>
+              <div class="s-label">What happens</div>
+              <p>An attacker with prior research on the detection stack identifies that lateral movement via WMI generates a specific alert category. Over six weeks, they generate WMI activity through a compromised internet-facing asset, one connection per day, always to the same internal destination, always at the same time, always completing without error. The category is conditioned. On day 43, the WMI activity pivots to a domain controller. The alert fires and is dismissed.</p>
+            </div>
+            <div class="indicator-box">
+              <div class="s-label">Detection indicator</div>
+              <p>Anomalously regular activity pattern from the conditioning source, same time, same destination, same parameters daily. A periodicity signal that looks like a scheduled task but has no corresponding legitimate scheduled task in inventory.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="scenario-card">
+          <div class="scenario-header">
+            <span class="scenario-num">S04</span>
+            <span class="scenario-title">Insider-assisted conditioning</span>
+          </div>
+          <div class="scenario-body">
+            <div>
+              <div class="s-label">What happens</div>
+              <p>An insider with knowledge of the SOC's alert categories uses legitimate access to generate repeated benign-looking alerts covering their planned exfiltration activity, large file transfers to an approved cloud storage service. Over 60 days they establish a pattern that conditions analysts to treat volume-based DLP alerts for that destination as normal. The actual exfiltration uses the same destination and similar volumes.</p>
+            </div>
+            <div class="indicator-box">
+              <div class="s-label">Detection indicator</div>
+              <p>Transfer volume trend analysis, legitimate transfers that gradually increase in size over 60 days without corresponding business justification may indicate pre-conditioning activity rather than genuine workflow growth.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// detection</p>
+      <h2>Metrics That Reveal Conditioning</h2>
+
+      <p>Conditioning leaves a measurable signature in triage data, but only if triage behavior is instrumented. Most SOC platforms record alert closure but do not record investigation depth, time spent, or the reasoning behind the closure decision.</p>
+
+      <div class="metrics-table">
+        <div class="metrics-row header">
+          <div class="metrics-cell">Metric</div>
+          <div class="metrics-cell">What it measures</div>
+          <div class="metrics-cell">Flag threshold</div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Investigation time trend</strong></div>
+          <div class="metrics-cell">Rolling 30-day average investigation time per alert category. A monotonic decrease toward a floor of seconds is the conditioning signature.</div>
+          <div class="metrics-cell"><span class="flag-text">>50% decrease in 30 days without tuning</span></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Investigation time variance</strong></div>
+          <div class="metrics-cell">Low variance indicates automatic dismissal. High variance indicates deliberate evaluation. Conditioning collapses variance toward zero.</div>
+          <div class="metrics-cell"><span class="flag-text">Variance &lt;10 sec with >20 instances</span></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Confirmation step rate</strong></div>
+          <div class="metrics-cell">Percentage of closures with at least one contextual query logged. Conditioning reduces this toward zero.</div>
+          <div class="metrics-cell"><span class="flag-text">&lt;20% for category with prior TP rate</span></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Per-source dismissal anomaly</strong></div>
+          <div class="metrics-cell">Investigation time for the same alert type broken down by source entity. A specific source investigated much faster than others indicates host-level conditioning (Scenario S02).</div>
+          <div class="metrics-cell"><span class="flag-text">Specific source 5x faster than category avg</span></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Cross-analyst correlation</strong></div>
+          <div class="metrics-cell">If multiple analysts show the same conditioning pattern for the same alert type simultaneously, social transmission of dismissal behavior is occurring.</div>
+          <div class="metrics-cell"><span class="flag-text">>3 analysts, same pattern, 14 days</span></div>
+        </div>
+        <div class="metrics-row">
+          <div class="metrics-cell"><strong>Synthetic TP miss rate</strong></div>
+          <div class="metrics-cell">Were true positives in this category missed during the conditioning window? Requires periodic synthetic injection to test detection capability empirically.</div>
+          <div class="metrics-cell"><span class="flag-text">Any miss during conditioning period</span></div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// remediation</p>
+      <h2>Architectural Controls That Break the Conditioning Cycle</h2>
+
+      <div class="control-list">
+
+        <div class="control-item">
+          <span class="control-num">01</span>
+          <div class="control-content">
+            <h4>Mandatory minimum investigation depth by alert category</h4>
+            <p>Define a minimum investigation protocol for each alert category, specific contextual checks enforced at the SOAR level. A protocol requiring three specific lookups takes 90 seconds minimum and cannot be completed in four seconds. This converts the timing floor from a conditioning indicator into a conditioning prevention mechanism. Alert closures with no playbook task completions are flagged for supervisory review.</p>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <span class="control-num">02</span>
+          <div class="control-content">
+            <h4>Alert category rotation and re-labeling</h4>
+            <p>Periodically relabel conditioned alert categories with new names or modified presentation, breaking the visual pattern association that triggers automatic dismissal. An analyst conditioned to "PSExec Lateral Movement v2" does not carry the same dismissal reflex to "Unusual SMB Execution Chain" even if the underlying detection logic is identical. This is a cognitive reset mechanism, not security through obscurity.</p>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <span class="control-num">03</span>
+          <div class="control-content">
+            <h4>Synthetic true positive injection</h4>
+            <p>The only empirical test of whether conditioning has created a functional blind spot: periodically inject a synthetic true positive into a conditioned alert category and measure whether analysts escalate it, investigate to minimum depth, or dismiss it. This is the detection health test, analogous to a fire drill for analyst behavior rather than evacuation routes. Quarterly injection covering the five alert categories with the highest historical FP rates is the minimum program.</p>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <span class="control-num">04</span>
+          <div class="control-content">
+            <h4>FP rate thresholds triggering mandatory tuning</h4>
+            <p>An alert category with a 95%+ false positive rate over 30 days is a conditioning risk regardless of its true positive coverage. Mandatory tuning thresholds convert the alert quality problem into a detection engineering ticket before the conditioning timeline completes. Automated reporting of per-category FP rates weekly; categories exceeding 90% over 30 days generate a mandatory review ticket.</p>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <span class="control-num">05</span>
+          <div class="control-content">
+            <h4>Conditioning-aware alert assignment rotation</h4>
+            <p>Conditioning is analyst-specific, a new analyst has no prior history with a conditioned category and approaches it with fresh engagement. Periodically rotating alert category assignments across analysts interrupts the conditioning timeline at the individual level. New analysts assigned to historically conditioned categories should be told the FP rate and the confirmation requirement explicitly, not the dismissal pattern.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>Analyst Behavior Is Part of the Attack Surface</h2>
+
+      <div class="pull-quote">
+        "A rule that fires and is dismissed in four seconds is not a detection. It is a logged non-event. The attacker who conditioned that response is not evading your rules, they are operating through them."
+      </div>
+
+      <p>Detection engineering focuses on whether rules fire. Conditioning analysis asks whether analysts respond when they do. A SOC that monitors alert volume, MTTD, and MTTR but does not monitor analyst investigation depth has an incomplete picture of its detection capability. The analyst layer is the final stage of the detection stack, and the stage with no automated integrity check.</p>
+
+      <p>The closing test: find the alert category in your environment with the highest false positive rate. Pull the last 90 days of investigation time data. Plot the trend. If the line goes from eight minutes to four seconds over that period with no corresponding tuning activity, that category is blind. Whether it became blind accidentally or deliberately, the result is identical.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>BF Skinner, operant conditioning and extinction theory; Gary Klein, RPD model and the expert pattern recognition mechanism being exploited; MITRE ATT&CK T1499 and T1562 for adjacent technique coverage; CrowdStrike and Mandiant red team reports on alert conditioning observations.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="threshold-evasion.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Detection Threshold Evasion
+        </a>
+        <a href="log-pipeline-manipulation.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Log Pipeline Manipulation
+        </a>
+        <a href="triage-knowledge-transfer.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Triage Knowledge Transfer
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>

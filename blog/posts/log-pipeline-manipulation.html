@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log Pipeline Manipulation: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body { background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg); font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .post-body code { font-family: var(--font-mono); font-size: 0.82rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.45rem; color: var(--accent2); }
+    .post-body pre { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.65; }
+    .post-body pre code { background: none; border: none; padding: 0; color: inherit; }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Pipeline diagram */
+    .pipeline-diagram { display: flex; flex-direction: column; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .pipeline-stage { display: grid; grid-template-columns: 1.5fr 1.5fr 2fr; border-bottom: 1px solid var(--border); }
+    .pipeline-stage:last-child { border-bottom: none; }
+    .pipeline-stage.header { background: var(--surface2); }
+    .pipeline-cell { padding: 0.8rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.5; }
+    .pipeline-cell:last-child { border-right: none; }
+    .pipeline-stage.header .pipeline-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .pipeline-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.1rem; }
+    .pipeline-cell code { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent2); background: rgba(125,211,252,0.08); border-radius: 3px; padding: 0.1rem 0.3rem; }
+    .attack-tag { font-family: var(--font-mono); font-size: 0.65rem; color: #f87171; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 3px; padding: 0.1rem 0.35rem; }
+
+    /* Technique cards */
+    .technique-list { display: flex; flex-direction: column; gap: 1rem; }
+    .technique-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+    .technique-card:hover { border-color: var(--border-hi); }
+    .technique-header { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .technique-num { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; }
+    .technique-title { font-size: 0.9rem; color: var(--text); font-weight: 500; flex: 1; }
+    .mitre-tag { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent2); background: rgba(125,211,252,0.08); border: 1px solid rgba(125,211,252,0.18); border-radius: 3px; padding: 0.1rem 0.4rem; }
+    .technique-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .t-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.1rem; }
+    .technique-body p { font-size: 0.87rem !important; line-height: 1.65 !important; }
+    .technique-body pre { font-size: 0.78rem; padding: 0.85rem 1rem; margin: 0; }
+    .gap-box { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.2); border-radius: 6px; padding: 0.65rem 0.9rem; }
+    .gap-box .t-label { color: #f87171; }
+    .gap-box p { font-size: 0.84rem !important; color: var(--muted); }
+
+    /* Integrity control table */
+    .integrity-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .integrity-row { display: grid; grid-template-columns: 1.2fr 2fr; border-bottom: 1px solid var(--border); }
+    .integrity-row:last-child { border-bottom: none; }
+    .integrity-row.header { background: var(--surface2); }
+    .integrity-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .integrity-cell:last-child { border-right: none; }
+    .integrity-row.header .integrity-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .integrity-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.1rem; }
+
+    /* Detection rules */
+    .rule-list { display: flex; flex-direction: column; gap: 0.85rem; }
+    .rule-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+    .rule-card:hover { border-color: var(--border-hi); }
+    .rule-header { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1.1rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .rule-num { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent); }
+    .rule-title { font-size: 0.88rem; color: var(--text); font-weight: 500; }
+    .rule-body { padding: 0.9rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .rule-body p { font-size: 0.86rem !important; line-height: 1.65 !important; }
+    .rule-body pre { font-size: 0.78rem; padding: 0.75rem 1rem; margin: 0; }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Detection</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">Jun 2026</span>
+        <span class="post-read-time">· 16 min read</span>
+      </div>
+      <h1>Log Pipeline Manipulation: When the Attacker Targets the Detection Infrastructure</h1>
+      <p class="post-lead">Your SIEM shows clean. No alerts fired. No anomalies detected. The attacker was active for six days. The telemetry covering their activity existed and then it didn't. Your detection architecture assumes the pipeline is honest. The attacker knew it wasn't.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>The Architecture That Trusts Its Own Inputs</h2>
+
+      <p>Every SIEM-based detection architecture rests on a foundational assumption that is almost never stated explicitly: the log pipeline is honest. Events generated at the endpoint arrive at the SIEM intact, complete, and unmodified. This assumption is structurally embedded in how detection works, rules fire on events that arrive; rules do not fire on events that were suppressed, corrupted, or delayed. The absence of events looks identical to the absence of activity.</p>
+
+      <p>Log pipeline manipulation appears in real intrusion post-mortems. The Carbanak campaign manipulated Windows Event Logs during banking sector intrusions. HAFNIUM cleared IIS and Event Logs on compromised Exchange servers before IR teams arrived. BlackByte ransomware used BYOVD to terminate EDR processes at kernel level before payload deployment. Lazarus Group unloaded Sysmon drivers and modified audit policy before credential theft operations. In every case, pipeline manipulation occurred in the middle of the intrusion, after persistence was established, before the highest-risk activity. It is deliberate operational security, not opportunism.</p>
+
+      <div class="callout">
+        <span class="callout-label">The asymmetry</span>
+        <p>Defenders must protect every stage of the pipeline. Attackers need to compromise only one to create a blind spot covering all downstream detection. Every stage left of the detection layer is an attack surface, and each stage failure is invisible to the detection layer because it only sees what arrives, not what was lost.</p>
+      </div>
+
+      <p class="section-eyebrow">// architecture</p>
+      <h2>The Pipeline as an Attack Surface</h2>
+
+      <div class="pipeline-diagram">
+        <div class="pipeline-stage header">
+          <div class="pipeline-cell">Stage</div>
+          <div class="pipeline-cell">Components</div>
+          <div class="pipeline-cell">Attack vectors</div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-cell"><strong>Event generation</strong></div>
+          <div class="pipeline-cell"><code>ETW</code> <code>Sysmon</code> <code>auditd</code></div>
+          <div class="pipeline-cell"><span class="attack-tag">Provider disabling</span> <span class="attack-tag">Audit policy modification</span></div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-cell"><strong>Local buffer</strong></div>
+          <div class="pipeline-cell"><code>Windows Event Log</code> <code>journald</code></div>
+          <div class="pipeline-cell"><span class="attack-tag">Log clearing</span> <span class="attack-tag">Direct tampering</span></div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-cell"><strong>Collection agent</strong></div>
+          <div class="pipeline-cell"><code>WEF</code> <code>Winlogbeat</code> <code>Fluentd</code></div>
+          <div class="pipeline-cell"><span class="attack-tag">Process kill</span> <span class="attack-tag">Config modification</span></div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-cell"><strong>Transport</strong></div>
+          <div class="pipeline-cell"><code>Syslog</code> <code>HTTPS</code> <code>Kafka</code></div>
+          <div class="pipeline-cell"><span class="attack-tag">Flooding</span> <span class="attack-tag">Delay injection</span></div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="pipeline-cell"><strong>Ingestion / parsing</strong></div>
+          <div class="pipeline-cell"><code>SIEM parser</code> <code>Field extraction</code></div>
+          <div class="pipeline-cell"><span class="attack-tag">Malformed events</span> <span class="attack-tag">Parser confusion</span></div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// threat catalog</p>
+      <h2>Seven Pipeline Manipulation Techniques</h2>
+
+      <div class="technique-list">
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T01</span>
+            <span class="technique-title">Windows Event Log channel clearing</span>
+            <span class="mitre-tag">T1070.001</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Clearing Security, System, or Application log channels via <code>wevtutil cl</code>, PowerShell <code>Clear-EventLog</code>, or direct API. Generates EID 1102 (Security log cleared) and EID 104 (System log cleared), but only if those channels are being forwarded before the clear occurs.</p>
+            </div>
+            <pre><code>wevtutil cl Security
+wevtutil cl "Microsoft-Windows-Sysmon/Operational"</code></pre>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>If the attacker clears the Sysmon operational log before WEF or the collection agent has forwarded events, the clearing event (EID 104) is generated but the pre-clearing events are permanently lost. Detection of the clear does not recover what was cleared.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T02</span>
+            <span class="technique-title">Sysmon and ETW provider disabling</span>
+            <span class="mitre-tag">T1562.001</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Rather than clearing logs after generation, disabling the providers that generate telemetry, no events are produced, so no clearing artifact exists. Sysmon can be stopped as a service, its driver unloaded, or its config modified to exclude specific event types.</p>
+            </div>
+            <pre><code>sc stop Sysmon64
+fltMC unload SysmonDrv
+logman stop "EventLog-Security" -ets</code></pre>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>Sysmon service stop generates a System event, but only if System log forwarding is active and the collection agent is still running. If the agent is stopped first, the Sysmon stop event is generated locally and never forwarded. Sequence matters: agent first, then provider.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T03</span>
+            <span class="technique-title">Collection agent process termination</span>
+            <span class="mitre-tag">T1562.001</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Killing Winlogbeat, NXLog, Fluentd, or the WEF subscription service stops forwarding without generating any event in the channels being forwarded. Events continue to be written locally but are never transmitted. From the SIEM's perspective, the host goes silent, indistinguishable from offline or network interruption.</p>
+            </div>
+            <pre><code>taskkill /F /IM winlogbeat.exe
+Stop-Service -Name "winlogbeat" -Force</code></pre>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>The SIEM receives no forwarding heartbeat and no explicit "agent stopped" event. Most SIEM deployments have no host-silence alerting that distinguishes "agent stopped by attacker" from "host rebooted" from "network issue."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T04</span>
+            <span class="technique-title">EDR sensor blinding, BYOVD</span>
+            <span class="mitre-tag">T1562.001</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Modern ransomware groups target EDR agents before payload deployment, process termination, driver unloading, or exploiting EDR vulnerabilities to disable kernel callbacks. BYOVD (Bring Your Own Vulnerable Driver) uses a legitimate but vulnerable signed driver to gain kernel-level access and blind EDR sensors. Used by Lazarus Group, BlackByte, and others.</p>
+            </div>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>BYOVD attacks use signed, legitimate drivers, no signature detection fires. The EDR is blinded before it can report its own compromise. Only pre-existing network telemetry or out-of-band monitoring survives.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T05</span>
+            <span class="technique-title">Log flooding, noise as coverage</span>
+            <span class="mitre-tag">T1499</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Flood the pipeline with high-volume low-fidelity events to bury malicious activity in noise, trigger SIEM ingestion rate limits, or exhaust log storage quotas causing rollover of older events, overwriting evidence before forwarding occurs.</p>
+            </div>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>SIEM storage quotas and ingestion rate limits are designed for cost control, not security. Most deployments drop or sample events above the ingestion rate limit, an attacker who knows the rate limit can generate noise above it, causing targeted event types to be dropped by the SIEM's own cost controls.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T06</span>
+            <span class="technique-title">Audit policy modification</span>
+            <span class="mitre-tag">T1562.002</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>Windows audit policy controls which event categories are generated. Disabling process creation auditing (suppressing EID 4688) or logon auditing (suppressing EIDs 4624/4625) eliminates entire event categories silently. The policy change itself generates EID 4719, but only if policy change auditing is still enabled.</p>
+            </div>
+            <pre><code>auditpol /set /subcategory:"Process Creation" /success:disable /failure:disable
+auditpol /set /subcategory:"Logon" /success:disable</code></pre>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>Attackers who disable audit policy change auditing first, then disable target categories, produce no audit trail of either action. Correct control: monitor <code>auditpol.exe</code> execution via Sysmon EID 1, which is independent of Windows audit policy configuration.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="technique-card">
+          <div class="technique-header">
+            <span class="technique-num">T07</span>
+            <span class="technique-title">Parser confusion and malformed event injection</span>
+            <span class="mitre-tag">T1070</span>
+          </div>
+          <div class="technique-body">
+            <div>
+              <div class="t-label">Mechanics</div>
+              <p>SIEM ingestion parsers extract fields from log events, malformed events can cause field extraction failures, event drops, or incorrect field mappings. An attacker who understands the target SIEM's parser behavior can craft events that arrive but fail to match detection rules because critical fields are missing, null, or mapped incorrectly.</p>
+            </div>
+            <div class="gap-box">
+              <div class="t-label">Detection gap</div>
+              <p>Parser failures are logged as ingestion errors, not security events. Most SOC teams never review ingestion error rates, they are treated as operational noise by the platform team and security noise by the SOC team. Nobody owns them.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// remediation</p>
+      <h2>Telemetry Integrity Controls: Stage by Stage</h2>
+
+      <p>Integrity controls must be applied at every stage. A control that protects event generation but not the collection agent is defeated by T03. A control that protects the agent but not the transport is defeated by T05.</p>
+
+      <div class="integrity-table">
+        <div class="integrity-row header">
+          <div class="integrity-cell">Pipeline stage</div>
+          <div class="integrity-cell">Integrity control</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Event generation</strong></div>
+          <div class="integrity-cell">Sysmon PPL (Protected Process Light), raises agent termination bar from local admin to kernel access; ETW provider session monitoring; <code>auditpol.exe</code> execution detection via Sysmon EID 1 independent of audit policy</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Local buffer</strong></div>
+          <div class="integrity-cell">Monitor EID 1102 and 104 via a forwarding path independent of the channels being cleared; minimize local retention reliance via real-time forwarding to reduce the clearing window</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Collection agent</strong></div>
+          <div class="integrity-cell">Protect agent process via PPL; heartbeat monitoring with silence alerting on defined cadence; out-of-band watchdog independent of the agent itself</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Transport</strong></div>
+          <div class="integrity-cell">TLS mutual authentication; ingestion volume anomaly detection; rate-based alerting on ingestion drops exceeding defined threshold per source</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Ingestion / parsing</strong></div>
+          <div class="integrity-cell">Parser error rate monitoring as a security metric; field presence validation for mandatory fields on high-value event types; alert on ingestion error spikes from specific sources</div>
+        </div>
+        <div class="integrity-row">
+          <div class="integrity-cell"><strong>Cross-pipeline (most orgs: absent)</strong></div>
+          <div class="integrity-cell">Expected events-per-host baseline; anomalous silence detection, host network-active but generating zero security events; sequence gap detection for ordered event types</div>
+        </div>
+      </div>
+
+      <h3>Anomalous silence detection: the most impactful single control</h3>
+      <p>Every active host generates a predictable minimum volume of security events. A host that is network-active but generating zero security events is anomalous. Implementation: establish per-host expected daily event volume baseline; alert on hosts confirmed network-active via NetFlow or firewall logs that are below the minimum event volume threshold for a defined period. Network activity without log activity is the signature of pipeline suppression, the host is doing things but the SIEM cannot see them.</p>
+
+      <p class="section-eyebrow">// detection rules</p>
+      <h2>Detecting Pipeline Manipulation Directly</h2>
+
+      <div class="rule-list">
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 01</span>
+            <span class="rule-title">Event log clearing from non-administrative process</span>
+          </div>
+          <div class="rule-body">
+            <pre><code>EID 1102 OR EID 104
+  InitiatingProcess NOT IN approved_admin_tooling</code></pre>
+            <p>This rule must be hosted in a log source separate from the logs being cleared. Forward EID 1102 and 104 via an independently configured forwarding path as a compensating control.</p>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 02</span>
+            <span class="rule-title">Sysmon service or driver stop</span>
+          </div>
+          <div class="rule-body">
+            <pre><code>System EID 7036
+  ServiceName: CONTAINS "Sysmon"
+  StoppingProcess: NOT IN approved_maintenance_list</code></pre>
+            <p>This event is in the System log, not the Sysmon Operational log, it survives Sysmon log clearing. Supplement with Sysmon EID 1 monitoring for <code>sc.exe</code> and <code>fltMC.exe</code> with Sysmon-related arguments.</p>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 03</span>
+            <span class="rule-title">Audit policy modification via auditpol</span>
+          </div>
+          <div class="rule-body">
+            <pre><code>Sysmon EID 1
+  Image: "*\\auditpol.exe"
+  CommandLine: CONTAINS "/set" AND "disable"</code></pre>
+            <p>Functions regardless of whether Windows audit policy change auditing (EID 4719) is enabled, Sysmon process creation monitoring is independent of audit policy configuration.</p>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 04</span>
+            <span class="rule-title">Collection agent process termination</span>
+          </div>
+          <div class="rule-body">
+            <pre><code>Sysmon EID 5 (process terminated)
+  Image: MATCHES collection_agent_process_names
+  (winlogbeat.exe, nxlog.exe, fluentd, etc.)</code></pre>
+            <p>If Sysmon is stopped before the collection agent, EID 5 for agent termination is never generated. The correct architecture is Sysmon PPL plus collection agent monitoring independent of Sysmon.</p>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 05</span>
+            <span class="rule-title">Host silence anomaly (SIEM-level)</span>
+          </div>
+          <div class="rule-body">
+            <pre><code>For each host in monitored_inventory:
+  IF no events received for > N minutes
+  AND host confirmed network-active (NetFlow / DHCP / firewall)
+  THEN alert, anomalous silence with active network presence</code></pre>
+            <p>Start threshold at 60 minutes to reduce noise from reboots and maintenance. The independent network activity confirmation is non-negotiable, host silence without network activity is just an offline host.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>The Pipeline Is Part of the Attack Surface</h2>
+
+      <div class="pull-quote">
+        "A detection architecture with no telemetry integrity controls is not detecting adversary activity, it is detecting what the adversary chooses not to hide."
+      </div>
+
+      <p>Detection engineering focuses on what the SIEM sees. Pipeline integrity is about ensuring the SIEM sees what it should, and knowing when it doesn't. The organizations most exposed to pipeline manipulation are those who have invested heavily in detection logic and nothing in telemetry integrity. They have built a sophisticated analysis layer on top of a pipeline that an attacker with local admin can silence in three commands.</p>
+
+      <p>The closing question: if an attacker stopped your Sysmon service, cleared your Windows Event Logs, and killed your collection agent right now, how long before your SOC noticed? If the answer is "when the next alert fires", your detection architecture has no floor.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>MITRE ATT&CK T1070 (Indicator Removal) sub-techniques; Sysmon PPL documentation (Sysinternals); BlackByte BYOVD analysis (Sophos X-Ops); Mandiant M-Trends reporting on log manipulation in intrusions; CISA guidance on logging and log integrity.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="lolbas-detection.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          LOLBAS Detection Is an Architecture Problem
+        </a>
+        <a href="threshold-evasion.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Detection Threshold Evasion
+        </a>
+        <a href="false-positive-conditioning.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          False Positive Conditioning
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>

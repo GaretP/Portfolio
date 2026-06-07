@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Garet P.: Security Analyst Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .hub-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+      width: 100%;
+      justify-content: center;
+    }
+    .hub-back:hover { color: var(--accent); border-color: var(--accent); }
+    .hub-back svg { transition: transform 0.2s; }
+    .hub-back:hover svg { transform: translateX(-2px); }
+  </style>
+</head>
+<body>
+<div id="main-content" style="display:flex;">
+
+  <aside class="sidebar">
+    <img class="sidebar-avatar-placeholder" src="../src/avatar.jpg" alt="Garet P."/>
+    <h1>Garet</h1>
+    <p class="sidebar-role">SOC Analyst</p>
+    <div class="sidebar-divider"></div>
+    <nav>
+      <a href="index.html" class="active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/>
+        </svg>
+        Home
+      </a>
+      <a href="projects.html">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        Projects
+      </a>
+      <a href="about.html">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        About
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-socials">
+        <a href="https://github.com/GaretP" target="_blank" title="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </a>
+        <a href="https://linkedin.com/in/garetp" target="_blank" title="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/>
+          </svg>
+        </a>
+      </div>
+      <a href="../index.html" class="hub-back">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to hub
+      </a>
+    </div>
+  </aside>
+
+  <div class="page-body">
+    <div class="page-header">
+      <p class="eyebrow">// security & development</p>
+      <h1>Security practitioner,<br>analyst, and builder.</h1>
+      <p>Working across security operations, detection engineering, compliance, and independent software development. I build the tools, run the investigations, and write about what I find.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Certifications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">2+</div>
+        <div class="stat-label">Years in Security</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">10+</div>
+        <div class="stat-label">Blog Posts</div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+
+      <div class="card">
+        <h2 class="section-title">About Me</h2>
+        <div class="about-text">
+          <p>I work across security operations, detection engineering, and compliance, building tools, running investigations, and thinking seriously about the gaps between what detection programs claim to cover and what they actually do.</p>
+          <p>My background spans SOC operations with hands-on experience in Sentinel, Splunk, and Falcon, GRC and compliance work across SOC 2 and NIST CSF, and independent software development. I write in-depth technical analysis on this site and build everything I can from scratch.</p>
+        </div>
+        <a href="about.html" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1.25rem;font-size:0.85rem;color:var(--accent);">
+          Full background
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Featured Work</h2>
+        <div style="margin-bottom:1.5rem;">
+          <span class="project-tag">SOC Lab</span>
+          <h3 style="font-family:var(--font-head);font-size:1.1rem;margin:0.75rem 0 0.5rem;color:var(--text);">SOC Analyst Lab</h3>
+          <p style="font-size:0.88rem;color:var(--muted);line-height:1.6;">Home lab on Debian 13 / KVM with Elastic Stack and a Windows 11 endpoint. Five structured investigations, brute force, LotL reconnaissance, phishing analysis, IOC automation, and detection engineering with full ATT&CK coverage mapping.</p>
+          <a href="projects.html" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1rem;font-size:0.85rem;color:var(--accent);">
+            View project
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:1.5rem;">
+          <span class="project-tag">Civic Tech</span>
+          <h3 style="font-family:var(--font-head);font-size:1.1rem;margin:0.75rem 0 0.5rem;color:var(--text);">Civic Nexus</h3>
+          <p style="font-size:0.88rem;color:var(--muted);line-height:1.6;">Independent political insight platform built end-to-end, FastAPI backend, PostgreSQL, Cloudflare edge, privacy-by-design architecture. Live in production.</p>
+          <a href="projects.html" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1rem;font-size:0.85rem;color:var(--accent);">
+            View project
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <h2 class="section-title">Skills & Tooling</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:0.6rem;">
+          <span class="skill-tag">Microsoft Sentinel</span>
+          <span class="skill-tag">Splunk</span>
+          <span class="skill-tag">CrowdStrike Falcon</span>
+          <span class="skill-tag">Elastic / Kibana</span>
+          <span class="skill-tag">SIEM / Log Analysis</span>
+          <span class="skill-tag">Incident Response</span>
+          <span class="skill-tag">Detection Engineering</span>
+          <span class="skill-tag">MITRE ATT&CK</span>
+          <span class="skill-tag">Vulnerability Management</span>
+          <span class="skill-tag">NIST CSF</span>
+          <span class="skill-tag">SOC 2</span>
+          <span class="skill-tag">GDPR</span>
+          <span class="skill-tag">Python · Bash</span>
+          <span class="skill-tag">Linux / BSD</span>
+          <span class="skill-tag">Network Security</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

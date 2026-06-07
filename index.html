@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #11111a;
+      --surface2:  #18182a;
+      --border:    rgba(180, 140, 255, 0.12);
+      --border-hi: rgba(180, 140, 255, 0.45);
+      --glow:      rgba(142, 107, 255, 0.18);
+      --accent:    #a78bfa;
+      --accent2:   #7dd3fc;
+      --text:      #e8e8f0;
+      --muted:     #8888a8;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font-body);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+    }
+
+    /* ── Splash / curtain ── */
+    #curtain {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 90%, #4c1d95 0%, #1e1040 35%, #0a0a0f 65%);
+      z-index: 200;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #curtain.gone {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #splash-text {
+      font-family: var(--font-head), 'Noto Sans KR', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 400;
+      color: #f0e8ff;
+      opacity: 0;
+      letter-spacing: 0.02em;
+      user-select: none;
+      text-align: center;
+    }
+
+    #splash-bar {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, #a78bfa, #7dd3fc);
+      transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 201;
+    }
+
+    /* ── Hub ── */
+    #hub {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse at 85% 95%, rgba(76, 29, 149, 0.4) 0%, transparent 50%),
+        radial-gradient(ellipse at 10%  5%, rgba(125, 211, 252, 0.07) 0%, transparent 45%),
+        var(--bg);
+      opacity: 0;
+      transition: opacity 0.6s ease 0.2s;
+      overflow: hidden;
+    }
+    #hub.visible { opacity: 1; }
+
+    /* ── Top bar ── */
+    .hub-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.75rem 3rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .hub-identity {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .hub-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--border-hi);
+      box-shadow: 0 0 18px var(--glow);
+      flex-shrink: 0;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hub-name {
+      font-family: var(--font-head);
+      font-size: 1.25rem;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .hub-role {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 0.15rem;
+    }
+
+    .hub-socials {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .hub-socials a {
+      color: var(--muted);
+      transition: color 0.2s;
+      display: flex;
+    }
+    .hub-socials a:hover { color: var(--accent); }
+
+    /* ── Grid area ── */
+    .hub-grid-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 3rem;
+      overflow: hidden;
+    }
+
+    .hub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      width: 100%;
+      max-width: 840px;
+    }
+
+    /* ── Cards ── */
+    .hub-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem 1.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .hub-card:nth-child(1) { animation-delay: 0.05s; }
+    .hub-card:nth-child(2) { animation-delay: 0.12s; }
+    .hub-card:nth-child(3) { animation-delay: 0.19s; }
+    .hub-card:nth-child(4) { animation-delay: 0.26s; }
+
+    .hub-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 80% 80%, rgba(142, 107, 255, 0.1) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .hub-card:hover { border-color: var(--border-hi); box-shadow: 0 0 40px var(--glow); transform: translateY(-4px); }
+    .hub-card:hover::before { opacity: 1; }
+
+    .hub-card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(142, 107, 255, 0.22), rgba(125, 211, 252, 0.08));
+      border: 1px solid rgba(167, 139, 250, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .hub-card-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--accent);
+    }
+
+    .hub-card-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .hub-card-title {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .hub-card-desc {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.62;
+      flex: 1;
+    }
+
+    .hub-card-cta {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      transition: color 0.2s, gap 0.2s;
+    }
+    .hub-card:hover .hub-card-cta { color: var(--accent); gap: 0.55rem; }
+
+    /* ── Bottom bar ── */
+    .hub-bottom {
+      padding: 1.1rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .hub-bottom-copy {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .avail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.85rem;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      color: #4ade80;
+    }
+
+    .avail-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 6px #4ade80;
+      animation: pulse 2s infinite;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash -->
+  <div id="curtain">
+    <h1 id="splash-text"></h1>
+  </div>
+  <div id="splash-bar"></div>
+
+  <!-- Hub -->
+  <div id="hub">
+
+    <header class="hub-top">
+      <div class="hub-identity">
+        <img class="hub-avatar" src="src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="hub-name">Garet</div>
+          <div class="hub-role">SOC Analyst</div>
+        </div>
+      </div>
+      <div class="hub-socials">
+        <a href="https://github.com/GaretP" target="_blank" title="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </a>
+        <a href="https://linkedin.com/in/garetp" target="_blank" title="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+            <circle cx="4" cy="4" r="2"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="hub-grid-wrap">
+      <div class="hub-grid">
+
+        <!-- Portfolio -->
+        <a href="portfolio/index.html" class="hub-card">
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div class="hub-card-eyebrow">// work</div>
+          <div class="hub-card-title">Portfolio</div>
+          <div class="hub-card-desc">Security operations, detection engineering, and incident response with GRC and compliance depth that most SOC analysts don't have.</div>
+          <div class="hub-card-cta">
+            Enter
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Blog -->
+        <a href="blog/index.html" class="hub-card">
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <div class="hub-card-eyebrow">// writing</div>
+          <div class="hub-card-title">Blog</div>
+          <div class="hub-card-desc">Thoughts on cybersecurity, privacy, emerging threats, and the intersection of technology and society.</div>
+          <div class="hub-card-cta">
+            Read
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Contact -->
+        <a href="contact/index.html" class="hub-card">
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <div class="hub-card-eyebrow">// reach out</div>
+          <div class="hub-card-title">Contact</div>
+          <div class="hub-card-desc">Have a project in mind, want to collaborate, or just want to say hello? I'd love to hear from you.</div>
+          <div class="hub-card-cta">
+            Connect
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <!-- Support -->
+        <a href="support/index.html" class="hub-card">
+          <div class="hub-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </div>
+          <div class="hub-card-eyebrow">// support</div>
+          <div class="hub-card-title">Support</div>
+          <div class="hub-card-desc">If my work has been useful to you, consider supporting it. Every contribution goes toward building better tools and research.</div>
+          <div class="hub-card-cta">
+            Contribute
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <footer class="hub-bottom">
+      <span class="hub-bottom-copy">© 2026 Garet P.</span>
+      <div class="avail-badge">
+        <span class="avail-dot"></span>
+        Available for new projects
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const el      = document.getElementById('splash-text');
+    const bar     = document.getElementById('splash-bar');
+    const curtain = document.getElementById('curtain');
+    const hub     = document.getElementById('hub');
+    const messages = ["Hello", "Bonjour", "Ciao", "こんにちは", "안녕하세요"];
+
+    function skipSplash() {
+      curtain.style.transition = 'none';
+      curtain.classList.add('gone');
+      bar.style.transition = 'none';
+      bar.style.width = '100%';
+      hub.style.transition = 'none';
+      hub.classList.add('visible');
+    }
+
+    function fadeTo(target, duration, cb) {
+      const start = performance.now();
+      const from  = parseFloat(el.style.opacity) || 0;
+      function step(now) {
+        const p = Math.min((now - start) / duration, 1);
+        el.style.opacity = from + (target - from) * p;
+        if (p < 1) requestAnimationFrame(step);
+        else if (cb) cb();
+      }
+      requestAnimationFrame(step);
+    }
+
+    function runSequence(i) {
+      if (i >= messages.length) {
+        sessionStorage.setItem('splashSeen', '1');
+        curtain.classList.add('gone');
+        hub.classList.add('visible');
+        return;
+      }
+      el.textContent = messages[i];
+      fadeTo(1, 150, () => {
+        setTimeout(() => fadeTo(0, 150, () => runSequence(i + 1)), 350);
+      });
+    }
+
+    if (sessionStorage.getItem('splashSeen')) {
+      skipSplash();
+    } else {
+      requestAnimationFrame(() => { bar.style.width = '100%'; });
+      setTimeout(() => runSequence(0), 150);
+    }
+  </script>
+
+</body>
+</html>

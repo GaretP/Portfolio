@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hypothesis-Driven Threat Hunting: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body {
+      background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg);
+      font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased;
+    }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body a { color: var(--accent); border-bottom: 1px solid rgba(167,139,250,0.3); transition: border-color 0.2s; }
+    .post-body a:hover { border-color: var(--accent); }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .post-body code { font-family: var(--font-mono); font-size: 0.82rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.45rem; color: var(--accent2); }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Hypothesis examples */
+    .hyp-examples { display: flex; flex-direction: column; gap: 0.75rem; }
+    .hyp-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .hyp-card.bad { border-color: rgba(248,113,113,0.3); }
+    .hyp-card.good { border-color: rgba(74,222,128,0.3); }
+    .hyp-verdict { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .hyp-verdict.bad { color: #f87171; }
+    .hyp-verdict.good { color: #4ade80; }
+    .hyp-text { font-size: 0.9rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .hyp-reason { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+
+    /* Input sources table */
+    .source-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .source-row { display: grid; grid-template-columns: 1fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .source-row:last-child { border-bottom: none; }
+    .source-row.header { background: var(--surface2); }
+    .source-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .source-cell:last-child { border-right: none; }
+    .source-row.header .source-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .source-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.15rem; }
+
+    /* Process steps */
+    .process-steps { display: flex; flex-direction: column; gap: 0.6rem; }
+    .process-step { display: flex; gap: 1rem; align-items: flex-start; padding: 0.9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.2s; }
+    .process-step:hover { border-color: var(--border-hi); }
+    .step-num { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; padding-top: 0.1rem; min-width: 1.5rem; }
+    .step-content h4 { font-size: 0.9rem; color: var(--text); font-weight: 500; margin-bottom: 0.25rem; }
+    .step-content p { font-size: 0.84rem; color: var(--muted); line-height: 1.6; }
+
+    /* Output types */
+    .output-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .output-row { display: grid; grid-template-columns: 1fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .output-row:last-child { border-bottom: none; }
+    .output-row.header { background: var(--surface2); }
+    .output-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .output-cell:last-child { border-right: none; }
+    .output-row.header .output-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .output-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.1rem; }
+    .output-route { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent2); }
+
+    /* Template block */
+    .template-block { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.8; }
+    .template-field { color: var(--accent); }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Threat Hunting</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">Apr 2026</span>
+        <span class="post-read-time">· 16 min read</span>
+      </div>
+      <h1>Hypothesis-Driven Threat Hunting</h1>
+      <p class="post-lead">Anomaly hunting is expensive archaeology, you are sifting through everything hoping to find something. Hypothesis-driven hunting is targeted excavation, you already know what you are looking for and where to dig. The difference is not technique. It is analytical discipline applied before the hunt starts.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>The Problem with Anomaly Fishing</h2>
+
+      <p>Two dominant hunting models exist in practice. Anomaly-based hunting: pull data, look for statistical outliers, hope something interesting surfaces. High resource cost, unpredictable yield, no analytical framework connecting findings to threat actors or techniques. Hypothesis-driven hunting: start with a specific, falsifiable claim about adversary behavior in your environment, then design the hunt to confirm or refute it.</p>
+
+      <p>Anomaly fishing persists because it feels thorough and occasionally finds real threats. But it scales poorly, cannot be measured, and produces no institutional knowledge when it finds nothing. A hunt without a hypothesis is not hunting, it is reactive analysis with extra steps. The analytical work that makes hunting valuable happens before the first query is written, not during it.</p>
+
+      <p class="section-eyebrow">// foundation</p>
+      <h2>What a Hunt Hypothesis Actually Is</h2>
+
+      <p>A hunt hypothesis is a <strong>falsifiable, specific claim</strong> about adversary behavior that is expected to leave observable evidence in available telemetry. Three requirements: falsifiable, the hunt can produce a result that definitively confirms or refutes it; specific, it names the technique, the expected evidence, and the telemetry source; observable, the expected behavior must produce artifacts that exist in your current telemetry.</p>
+
+      <div class="hyp-examples">
+        <div class="hyp-card bad">
+          <span class="hyp-verdict bad">❌ Not a hypothesis</span>
+          <div class="hyp-text">"Look for unusual PowerShell activity across endpoints."</div>
+          <div class="hyp-reason">Too broad to be falsifiable. "Unusual" is undefined. No specific technique, no expected evidence, no telemetry anchor. A hunt built on this will produce noise or nothing.</div>
+        </div>
+        <div class="hyp-card bad">
+          <span class="hyp-verdict bad">❌ Not a hypothesis</span>
+          <div class="hyp-text">"Check if any of our vendors were in the recent breach report."</div>
+          <div class="hyp-reason">This is a threat intelligence lookup, not a hunt. It produces no observable evidence claim about your environment.</div>
+        </div>
+        <div class="hyp-card good">
+          <span class="hyp-verdict good">✓ A hypothesis</span>
+          <div class="hyp-text">"If a threat actor consistent with APT29's documented tradecraft has accessed our environment, we expect to find evidence of WMIC or mshta.exe spawning cmd.exe or PowerShell on endpoints accessed by privileged accounts in the last 30 days, correlatable to authentication events outside business hours."</div>
+          <div class="hyp-reason">Specific technique. Named threat actor profile. Expected artifact type. Defined telemetry sources. Time-bounded. Falsifiable: if no such process chains exist, the hypothesis is refuted for this period.</div>
+        </div>
+      </div>
+
+      <p>The structure of a well-formed hypothesis: <strong>IF</strong> [adversary condition] <strong>THEN</strong> [observable behavior] <strong>IN</strong> [specific telemetry] <strong>WITHIN</strong> [scope and time bound]. The time bound matters, an unbounded hunt cannot be closed. A time-bounded hunt has a defined completion state.</p>
+
+      <p class="section-eyebrow">// methodology</p>
+      <h2>The Three Input Sources</h2>
+
+      <p>Hypotheses are derived from three structured input sources, each with different characteristics.</p>
+
+      <div class="source-table">
+        <div class="source-row header">
+          <div class="source-cell">Source</div>
+          <div class="source-cell">What it provides</div>
+          <div class="source-cell">Best for</div>
+        </div>
+        <div class="source-row">
+          <div class="source-cell"><strong>Threat Intelligence</strong></div>
+          <div class="source-cell">Actor profiles, campaign reports, ISAC advisories with TTP detail, direct behavioral evidence from real intrusions. IOCs are not useful here; technique procedures are.</div>
+          <div class="source-cell">Actor-specific hunts</div>
+        </div>
+        <div class="source-row">
+          <div class="source-cell"><strong>MITRE ATT&CK</strong></div>
+          <div class="source-cell">Structured TTP taxonomy with technique procedures and detection guidance. ATT&CK Navigator maps existing coverage against the matrix to surface gaps.</div>
+          <div class="source-cell">Coverage gap analysis</div>
+        </div>
+        <div class="source-row">
+          <div class="source-cell"><strong>Incident History</strong></div>
+          <div class="source-cell">Your own prior incidents and post-mortems, the highest environmental fidelity of any input source. Most organizations do not systematically convert post-mortems into hunt hypotheses.</div>
+          <div class="source-cell">Recurrence and spread</div>
+        </div>
+        <div class="source-row">
+          <div class="source-cell"><strong>Red Team Findings</strong></div>
+          <div class="source-cell">Techniques that succeeded undetected during authorized assessments, the most direct evidence of detection gaps in your specific environment.</div>
+          <div class="source-cell">Verified gap hunts</div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// methodology</p>
+      <h2>The Six-Step Derivation Process</h2>
+
+      <div class="process-steps">
+        <div class="process-step">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <h4>Select input source</h4>
+            <p>CTI report, ATT&CK coverage gap, incident history, or red team finding.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <h4>Extract technique</h4>
+            <p>A specific TTP, not an actor name or general behavior area. Map to an ATT&CK technique ID where possible.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <h4>Telemetry feasibility gate</h4>
+            <p>The most frequently skipped and most critical step. Confirm the required telemetry is collected, retained for the hunt period, and queryable. A hypothesis about WMI persistence is not huntable if Sysmon EIDs 19–21 are not enabled, the correct output is a telemetry gap finding, not a hunt.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <span class="step-num">04</span>
+          <div class="step-content">
+            <h4>Define the observable</h4>
+            <p>The specific evidence pattern the hunt will search for, artifact type, field values, expected combinations.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <span class="step-num">05</span>
+          <div class="step-content">
+            <h4>Scope and bound</h4>
+            <p>Environment subset, user population, time window. A defined scope creates a completion state.</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <span class="step-num">06</span>
+          <div class="step-content">
+            <h4>State the hypothesis in writing</h4>
+            <p>IF/THEN/IN/WITHIN, falsifiable and written down before any query is written. The query is derived from the hypothesis, not the other way around.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// worked example</p>
+      <h2>From CTI Report to Executed Hunt</h2>
+
+      <p>Input: a CTI report describes a financially motivated threat actor targeting financial services organizations using Kerberoasting for credential access followed by lateral movement via PsExec to backup infrastructure.</p>
+
+      <p><strong>Step 1: sector relevance:</strong> financial services, relevant. Proceed.</p>
+
+      <p><strong>Step 2: technique extraction:</strong> two techniques with distinct hunt requirements. T1558.003 (Kerberoasting) and T1021.002 / T1570 (lateral movement via PsExec to backup servers).</p>
+
+      <p><strong>Step 3: telemetry feasibility:</strong> Kerberoasting requires Windows Security Event ID 4769 with RC4 encryption type filter (0x17), confirm collected and retained. PsExec detection requires process creation events on destination hosts showing PSEXESVC service creation, confirm EDR coverage on backup infrastructure, which is frequently absent.</p>
+
+      <p><strong>Hypothesis A:</strong> "If a threat actor consistent with this campaign has operated in our environment, we expect to find Event ID 4769 tickets requested for service accounts with RC4 (0x17) encryption type from workstations that do not typically request service tickets, within the last 60 days."</p>
+
+      <p><strong>Hypothesis B:</strong> "If lateral movement to backup infrastructure occurred, we expect to find PSEXESVC service creation events or psexec process creation on backup servers from source hosts outside the defined backup administration workstation group, within the last 60 days."</p>
+
+      <p><strong>Null result handling:</strong> if Hypothesis A produces no findings, document the absence as a negative finding with the query, data range, and data sources checked. If Event ID 4769 is not being collected at all, the output is a telemetry gap finding, not a clean bill of health. If backup infrastructure has no EDR coverage, document as a coverage gap. That is itself a risk finding.</p>
+
+      <p class="section-eyebrow">// analysis</p>
+      <h2>The Null Result Problem</h2>
+
+      <p>Most hunt programs treat null results as failures. This is analytically wrong. A null result from a well-formed hypothesis is evidence, it bounds where the organization has been and informs residual risk assessment. But not all null results are equal.</p>
+
+      <ul>
+        <li><strong>True negative:</strong> the technique was not observed. Telemetry was present and complete. Confidence: high. The organization can assert this technique was not used in this scope and period.</li>
+        <li><strong>Telemetry-limited negative:</strong> the technique may have occurred but the required telemetry was absent or incomplete. Confidence: low. Correct output: a telemetry gap finding, not a clean result.</li>
+        <li><strong>Scope-limited negative:</strong> technique not observed within the defined scope, but the scope excluded environments where it could have occurred. Confidence: partial. The finding needs a scope caveat.</li>
+      </ul>
+
+      <p>A telemetry-limited negative presented as a true negative to leadership is a false assurance, and one that will be discovered when an incident occurs in exactly the uncovered area.</p>
+
+      <p class="section-eyebrow">// remediation</p>
+      <h2>Hunt Outputs That Feed the Program</h2>
+
+      <p>A completed hunt should produce at least one of four structured outputs, the output type determines routing and downstream program impact.</p>
+
+      <div class="output-table">
+        <div class="output-row header">
+          <div class="output-cell">Output type</div>
+          <div class="output-cell">What it is</div>
+          <div class="output-cell">Routes to</div>
+        </div>
+        <div class="output-row">
+          <div class="output-cell"><strong>Adversary finding</strong></div>
+          <div class="output-cell">Confirmed or suspected malicious activity requiring escalation</div>
+          <div class="output-cell"><span class="output-route">IR escalation</span></div>
+        </div>
+        <div class="output-row">
+          <div class="output-cell"><strong>Detection candidate</strong></div>
+          <div class="output-cell">Hunt query that produced signal worth converting to a persistent detection rule</div>
+          <div class="output-cell"><span class="output-route">Detection engineering</span></div>
+        </div>
+        <div class="output-row">
+          <div class="output-cell"><strong>Telemetry gap</strong></div>
+          <div class="output-cell">Required evidence was absent, incomplete, or not retained for the hunt period</div>
+          <div class="output-cell"><span class="output-route">Coverage backlog</span></div>
+        </div>
+        <div class="output-row">
+          <div class="output-cell"><strong>Negative finding</strong></div>
+          <div class="output-cell">Hypothesis refuted with high-confidence telemetry, absence of activity confirmed</div>
+          <div class="output-cell"><span class="output-route">Hunt record library</span></div>
+        </div>
+      </div>
+
+      <p>The detection candidate output is the highest long-term value product of a hunt program. Every confirmed technique finding that is not converted to a detection rule is institutional knowledge that will need to be re-discovered the next time the technique appears.</p>
+
+      <p class="section-eyebrow">// template</p>
+      <h2>Hypothesis Template</h2>
+
+      <div class="template-block">
+        <span class="template-field">IF</span> [actor/technique condition] is present in our environment,<br>
+        <span class="template-field">THEN</span> we expect to observe [specific artifact/behavior],<br>
+        <span class="template-field">IN</span> [telemetry source and specific fields],<br>
+        <span class="template-field">WITHIN</span> [environment scope] over [time window].<br><br>
+        <span class="template-field">Telemetry feasibility:</span> [confirmed / partial / blocked]<br>
+        <span class="template-field">Priority:</span> [High / Medium / Low] - [rationale]
+      </div>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>The Hypothesis Is the Product, Not the Query</h2>
+
+      <div class="pull-quote">
+        "A hunt without a hypothesis is not hunting. It is reactive analysis with extra steps, and no way to know what you proved when you finish."
+      </div>
+
+      <p>The query is an implementation detail. The hypothesis is the analytical work. A hunter who writes the query first and derives the hypothesis afterward has done the steps in the wrong order and will produce findings that cannot be confidently interpreted.</p>
+
+      <p>The closing test: look at the last five hunts your team completed. Can you state the hypothesis each one was testing? Can you state whether the hypothesis was confirmed, refuted, or telemetry-limited? If not, those hunts consumed analyst time and produced findings that cannot be built upon.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>MITRE ATT&CK Navigator for coverage gap analysis; Sqrrl's "A Framework for Cyber Threat Hunting" (2015); TaHiTI Threat Hunting Methodology; David Bianco's Pyramid of Pain for IOC vs. TTP hunting value comparison.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="hunt-program-outputs.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hunt Program Outputs That Build the Program
+        </a>
+        <a href="lolbas-detection.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          LOLBAS Detection Is an Architecture Problem
+        </a>
+        <a href="triage-knowledge-transfer.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Triage Knowledge Transfer
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>

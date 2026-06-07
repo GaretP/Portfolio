@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Triage Knowledge Transfer: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body { background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg); font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Contrast table */
+    .contrast-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .contrast-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+    .contrast-row:last-child { border-bottom: none; }
+    .contrast-row.header { background: var(--surface2); }
+    .contrast-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.6; }
+    .contrast-cell:last-child { border-right: none; }
+    .contrast-row.header .contrast-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .contrast-row.header .contrast-cell:first-child { color: #4ade80; }
+    .contrast-row.header .contrast-cell:last-child { color: #f87171; }
+
+    /* Heuristic cards */
+    .heuristic-list { display: flex; flex-direction: column; gap: 1rem; }
+    .heuristic-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+    .heuristic-card:hover { border-color: var(--border-hi); }
+    .heuristic-header { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .heuristic-num { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; }
+    .heuristic-title { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+    .heuristic-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.7rem; }
+    .h-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.1rem; }
+    .heuristic-body p { font-size: 0.87rem !important; color: var(--muted); line-height: 1.65 !important; }
+    .heuristic-teach { background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.15); border-radius: 6px; padding: 0.6rem 0.85rem; }
+    .heuristic-teach p { font-size: 0.84rem !important; color: var(--text) !important; }
+
+    /* Transfer mechanisms */
+    .transfer-table { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .transfer-row { display: grid; grid-template-columns: 1.5fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .transfer-row:last-child { border-bottom: none; }
+    .transfer-row.header { background: var(--surface2); }
+    .transfer-cell { padding: 0.8rem 1.1rem; font-size: 0.84rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .transfer-cell:last-child { border-right: none; }
+    .transfer-row.header .transfer-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .transfer-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.1rem; }
+    .transfer-rating { font-family: var(--font-mono); font-size: 0.72rem; }
+    .rating-high { color: #4ade80; }
+    .rating-med { color: #fbbf24; }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">SOC</span>
+        <span class="post-tag">Triage</span>
+        <span class="post-date">Feb 2026</span>
+        <span class="post-read-time">· 15 min read</span>
+      </div>
+      <h1>Triage Knowledge Transfer</h1>
+      <p class="post-lead">The senior analyst closes the alert in forty seconds. The junior analyst works it for twenty minutes and escalates it as a P1. Both looked at the same event. One of them knew something the other didn't, but nobody has ever written down what it was.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>The Knowledge That Lives Only in One Person's Head</h2>
+
+      <p>Every mature SOC has the same structural problem: triage quality is heavily analyst-dependent. A senior and junior analyst looking at the same alert produce different outcomes, different escalation rates, and different investigation paths. This is framed as an "experience gap", inevitable, closing naturally over time. That framing is accurate and an abdication. It treats the knowledge transfer problem as unsolvable rather than as an engineering problem.</p>
+
+      <p>The organizational cost: inconsistent triage produces missed escalations, unnecessary P1 noise, analyst burnout in junior tiers, and a SOC whose quality is directly correlated with staff retention, the single most volatile variable in the business.</p>
+
+      <p>Expert triage judgment is not mystical pattern recognition that cannot be articulated. It is a set of heuristics, decision rules, and environmental priors that have never been made explicit because nobody asked the senior analyst to articulate them. Making them explicit is a program design problem, and it has tractable solutions.</p>
+
+      <p class="section-eyebrow">// cognitive</p>
+      <h2>What Expert Triage Judgment Actually Is</h2>
+
+      <p>Gary Klein's Recognition-Primed Decision (RPD) model explains it: experts do not evaluate options and choose the best one. They recognize situational patterns and match them to previously successful responses. Expert analysts are not doing slower, more rigorous analysis than junior analysts, they are doing faster, pattern-matched analysis that bypasses explicit deliberation. The result looks like intuition. The mechanism is accumulated pattern libraries.</p>
+
+      <p>What the expert's pattern library contains that the junior's does not:</p>
+
+      <ul>
+        <li><strong>Environmental priors:</strong> knowledge of what is normal for this specific organization's infrastructure, not just what is normal generically</li>
+        <li><strong>False positive signatures:</strong> accumulated knowledge of which alert types reliably produce benign explanations in this specific environment</li>
+        <li><strong>Escalation triggers:</strong> specific combinations of fields, timing, or context that have previously indicated real threats, often combinations that are not in any runbook</li>
+        <li><strong>Investigative shortcuts:</strong> the three lookups that tell you in ninety seconds what would otherwise take twenty minutes</li>
+      </ul>
+
+      <div class="contrast-table">
+        <div class="contrast-row header">
+          <div class="contrast-cell">Senior analyst: same PowerShell alert</div>
+          <div class="contrast-cell">Junior analyst: same PowerShell alert</div>
+        </div>
+        <div class="contrast-row">
+          <div class="contrast-cell">Sees the parent process. Recognizes the software deployment tool that fires this alert every Tuesday during patch cycles. Checks command line, matches known deployment pattern. Closes as known FP in 45 seconds.</div>
+          <div class="contrast-cell">Sees encoded PowerShell. Escalates immediately, encoded commands are in the runbook as suspicious. Spends 25 minutes documenting. A senior analyst explains the patch cycle context. Learns this instance. Doesn't learn the general principle.</div>
+        </div>
+      </div>
+
+      <p>The junior analyst did not make an error, they followed the runbook correctly. The runbook was incomplete because it did not encode the environmental context that made the senior analyst's judgment possible. This is a documentation failure, not a skills failure.</p>
+
+      <p class="section-eyebrow">// methodology</p>
+      <h2>Extracting Tacit Heuristics: the Elicitation Process</h2>
+
+      <p>The Critical Decision Method (CDM) is an interview technique from naturalistic decision-making research directly applicable to SOC knowledge extraction. CDM asks the expert to walk through a specific past case in retrospective detail, probing for cues noticed, interpretations formed, and decisions made, with attention to moments where the expert's path diverged from what a novice would have done.</p>
+
+      <p>A practical elicitation approach without formal CDM training: select five to ten recent alerts the senior analyst triaged quickly that a junior had previously escalated incorrectly or slowly. For each, ask the senior analyst to narrate their triage process aloud, pausing at each decision point to explain what they noticed and why it changed their assessment. The facilitator's job is to resist the answer "I just knew" and probe for the specific observable that triggered the recognition.</p>
+
+      <p>The contrast case technique: present the senior analyst with a confirmed malicious version and a confirmed benign version of the same alert type simultaneously. Ask: what is different between these two? What single field most changes your assessment? The differences the senior analyst identifies are the discriminating features their pattern library uses.</p>
+
+      <div class="callout">
+        <span class="callout-label">Practical note</span>
+        <p>Elicitation sessions work best as recorded conversations, not written exercises. Senior analysts articulate reasoning more naturally in speech. Transcribe and structure afterward, don't ask them to produce structured heuristics directly, because that asks them to do the cognitive work that makes articulation hard.</p>
+      </div>
+
+      <p class="section-eyebrow">// worked examples</p>
+      <h2>Six Explicit Heuristics: with Teach-As Framing</h2>
+
+      <p>Each heuristic follows the same structure: observable condition → interpretive weight → decision guidance. The interpretive weight is what runbooks typically omit.</p>
+
+      <div class="heuristic-list">
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H01</span>
+            <span class="heuristic-title">Parent process anomaly as stronger signal than child identity</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF suspicious child AND parent is expected for that child → weight: low. IF suspicious child AND parent is unexpected → weight: high. The identity of the child matters less than whether the parent could plausibly have spawned it. cmd.exe from explorer.exe is unremarkable. cmd.exe from a PDF reader is not.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"Before asking what the child is doing, ask why this parent would have created it."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H02</span>
+            <span class="heuristic-title">Execution timing relative to business patterns</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF alert matches known automation type AND execution is within the known automation window → weight: low, verify pattern match. IF same alert AND execution is outside the automation window → weight: elevated, treat as anomalous even if technically identical. The same process at 02:15 during the patch window and at 14:30 on a Wednesday are not the same event.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"Would this activity make sense if a legitimate administrator were doing it right now? If not, why is it happening now?"</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H03</span>
+            <span class="heuristic-title">User context as risk multiplier</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF suspicious activity AND standard user → assess at face value. IF same activity AND privileged account → escalate one severity tier regardless of activity-level assessment. A standard user running a suspicious script may be a misconfigured application. The same script from a domain admin is a potential lateral movement or credential access event. The blast radius if malicious is not the same.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"Who is doing this? Now ask yourself what an attacker could do from that account if this isn't what it looks like."</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H04</span>
+            <span class="heuristic-title">Uniqueness as signal within the alert population</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF the alert type has fired frequently AND this instance matches the prior pattern → weight: low. IF the alert type has fired frequently AND this instance is the only one with a specific field value → weight: high. A hundred PowerShell alerts from a dozen hosts is alert fatigue. One PowerShell alert with a command line that appears in no other alert is a signal. Junior analysts see alert type. Senior analysts see population distribution.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"Is this one different from all the others? If yes, why?"</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H05</span>
+            <span class="heuristic-title">Sequence coherence across host/user activity</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF an alert is individually low severity AND recent alert history for the host or user shows a reconnaissance → execution → persistence pattern → treat the sequence as high severity regardless of individual alert ratings. A failed login, followed by a successful login, followed by PowerShell execution, followed by a new scheduled task is a kill chain. Junior analysts triage each alert independently. Senior analysts maintain a running mental model of recent host and user activity.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"What happened on this host or for this user in the last two hours? Does this alert make more sense as part of a sequence?"</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="heuristic-card">
+          <div class="heuristic-header">
+            <span class="heuristic-num">H06</span>
+            <span class="heuristic-title">The "explain it benignly" test</span>
+          </div>
+          <div class="heuristic-body">
+            <div>
+              <div class="h-label">Rule</div>
+              <p>IF you can construct a specific plausible benign explanation AND the evidence supports it → document and close. IF no plausible benign explanation survives contact with the evidence → escalate regardless of individual alert severity. Senior analysts constantly construct and test benign hypotheses: "could this be the backup job?", "is this user a developer who legitimately runs scripts?" When no benign explanation fits all the evidence, that absence is the signal.</p>
+            </div>
+            <div class="heuristic-teach">
+              <div class="h-label">Teach as</div>
+              <p>"Tell me the benign story for this alert. If you can't tell one that fits all the evidence, escalate."</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// transfer mechanisms</p>
+      <h2>Getting Heuristics into the Analyst Workflow</h2>
+
+      <p>Individual heuristics are useful but scatter-shot. The output of elicitation should be structured into alert-category-specific triage decision trees, lightweight reasoning scaffolds that apply heuristics in the order they most efficiently resolve ambiguity for a given alert type.</p>
+
+      <div class="transfer-table">
+        <div class="transfer-row header">
+          <div class="transfer-cell">Mechanism</div>
+          <div class="transfer-cell">How it works</div>
+          <div class="transfer-cell">Value / cost</div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>Alert-embedded decision guides</strong></div>
+          <div class="transfer-cell">Triage trees embedded directly in the alert template or SOAR playbook, heuristics appear at the point of use, not in a separate wiki</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-high">High / Low</span></div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>False positive catalog</strong></div>
+          <div class="transfer-cell">Documented catalog of known FP patterns by alert type and environment context. Every senior analyst FP close takes 30 seconds longer to produce one catalog entry</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-high">Highest ROI</span></div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>Escalation debrief protocol</strong></div>
+          <div class="transfer-cell">Every escalation triggers a structured two-minute debrief: what did the junior see, what did the senior see differently, what heuristic resolved it</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-high">High / Very low</span></div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>Annotated case library</strong></div>
+          <div class="transfer-cell">Searchable library of past cases with senior analyst triage commentary, junior analysts look up similar cases and read the expert reasoning</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-med">High / Medium</span></div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>Think-aloud pair triage</strong></div>
+          <div class="transfer-cell">Senior and junior triage the same alert simultaneously, verbalizing reasoning. Structured debrief focuses on where reasoning diverged</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-med">High / Intensive</span></div>
+        </div>
+        <div class="transfer-row">
+          <div class="transfer-cell"><strong>Retrospective case review</strong></div>
+          <div class="transfer-cell">Weekly structured review of a closed case: what was found, what the junior's initial assessment was, and what the senior would have done differently and why</div>
+          <div class="transfer-cell"><span class="transfer-rating rating-med">Systematic / Medium</span></div>
+        </div>
+      </div>
+
+      <p>The false positive catalog deserves specific attention. It is the most direct encoding of environmental prior knowledge and the highest-ROI knowledge transfer artifact a SOC team can produce. Format: alert type → specific condition combination → known benign explanation → confirmation step that verifies the benign explanation applies to this instance. A catalog with 200 well-documented FP patterns eliminates more unnecessary junior analyst investigation time than any other single investment.</p>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>The Senior Analyst's Real Leverage Is What They Write Down</h2>
+
+      <div class="pull-quote">
+        "Every undocumented heuristic is one resignation letter away from being lost."
+      </div>
+
+      <p>A senior analyst who triages five hundred alerts a week is generating individual value. A senior analyst who spends two hours extracting and documenting the heuristics behind those decisions is generating institutional value that scales across every junior analyst on the team indefinitely.</p>
+
+      <p>The closing question: if the two most experienced analysts on your team left tomorrow, how long before your junior triage quality reached current levels again? If the answer is "years", the knowledge transfer problem is also a business continuity problem, and it has been sitting in plain sight the whole time.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>Gary Klein, "Sources of Power: How People Make Decisions" (1998), the foundational RPD model; Klein et al., "The Critical Decision Method" for the elicitation protocol; SANS analyst development resources on structured triage methodology.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="lolbas-detection.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          LOLBAS Detection Is an Architecture Problem
+        </a>
+        <a href="hypothesis-driven-hunting.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hypothesis-Driven Threat Hunting
+        </a>
+        <a href="hunt-program-outputs.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hunt Program Outputs That Build the Program
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>

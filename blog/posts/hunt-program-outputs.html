@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hunt Program Outputs That Build the Program: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body { background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg); font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Output routing table */
+    .output-routing { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .output-routing-row { display: grid; grid-template-columns: 1.2fr 2fr 1fr; border-bottom: 1px solid var(--border); }
+    .output-routing-row:last-child { border-bottom: none; }
+    .output-routing-row.header { background: var(--surface2); }
+    .output-routing-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .output-routing-cell:last-child { border-right: none; }
+    .output-routing-row.header .output-routing-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .output-routing-cell strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 0.1rem; }
+    .route-tag { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent2); }
+
+    /* Record templates */
+    .record-template { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .record-header { background: var(--surface); padding: 0.65rem 1.1rem; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .record-row { display: grid; grid-template-columns: 1fr 2fr; border-bottom: 1px solid var(--border); }
+    .record-row:last-child { border-bottom: none; }
+    .record-key { padding: 0.6rem 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); background: rgba(167,139,250,0.04); border-right: 1px solid var(--border); display: flex; align-items: flex-start; }
+    .record-val { padding: 0.6rem 1rem; font-size: 0.83rem; color: var(--muted); line-height: 1.55; }
+    .record-val code { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent2); background: rgba(125,211,252,0.08); border-radius: 3px; padding: 0.1rem 0.35rem; }
+
+    /* Metrics table */
+    .metrics-list { display: flex; flex-direction: column; gap: 0.65rem; }
+    .metric-item { display: flex; gap: 1rem; align-items: flex-start; padding: 0.9rem 1.1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+    .metric-name { font-size: 0.88rem; color: var(--text); font-weight: 500; flex: 1; }
+    .metric-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; flex: 2; }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Threat Hunting</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">Mar 2026</span>
+        <span class="post-read-time">· 14 min read</span>
+      </div>
+      <h1>Hunt Program Outputs That Build the Program</h1>
+      <p class="post-lead">Your team just spent forty hours on a hunt. They found nothing. Next week, they will start another hunt. Nothing from the first hunt will inform the second one. The queries are gone. The data sources checked are undocumented. The telemetry gaps discovered are untracked. Forty hours. Zero institutional value. This is how most hunt programs operate.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>The Hunt Program That Consumes Time and Produces Nothing Durable</h2>
+
+      <p>Threat hunting is resource-intensive, senior analyst time, tooling access, data processing costs. But most hunt programs have no systematic process for converting hunt activity into program assets. A hunt that finds an adversary produces an incident. A hunt that finds nothing produces a verbal debrief, a closed ticket, and institutional amnesia.</p>
+
+      <p>The compounding problem: a program without structured outputs cannot improve. Each hunt starts from approximately the same knowledge base as the last one, because nothing from prior hunts was captured in a reusable form. Hunt outputs are not a reporting requirement, they are the mechanism by which hunting improves detection coverage, reduces telemetry gaps, and builds the institutional knowledge that makes the next hunt faster and more precise.</p>
+
+      <p class="section-eyebrow">// framework</p>
+      <h2>The Four Output Types: a Routing Framework</h2>
+
+      <p>Every completed hunt should produce exactly one of four structured outputs. The output type determines routing, documentation standard, and downstream program impact. A single hunt can produce multiple output types simultaneously.</p>
+
+      <div class="output-routing">
+        <div class="output-routing-row header">
+          <div class="output-routing-cell">Output type</div>
+          <div class="output-routing-cell">Definition</div>
+          <div class="output-routing-cell">Routes to</div>
+        </div>
+        <div class="output-routing-row">
+          <div class="output-routing-cell"><strong>Adversary finding</strong></div>
+          <div class="output-routing-cell">Confirmed or suspected malicious activity requiring escalation and response</div>
+          <div class="output-routing-cell"><span class="route-tag">IR escalation</span></div>
+        </div>
+        <div class="output-routing-row">
+          <div class="output-routing-cell"><strong>Detection candidate</strong></div>
+          <div class="output-routing-cell">Hunt query that produced signal worth converting to a persistent detection rule</div>
+          <div class="output-routing-cell"><span class="route-tag">Detection engineering</span></div>
+        </div>
+        <div class="output-routing-row">
+          <div class="output-routing-cell"><strong>Telemetry gap</strong></div>
+          <div class="output-routing-cell">Required evidence was absent, incomplete, or not retained for the hunt period</div>
+          <div class="output-routing-cell"><span class="route-tag">Coverage backlog</span></div>
+        </div>
+        <div class="output-routing-row">
+          <div class="output-routing-cell"><strong>Negative finding</strong></div>
+          <div class="output-routing-cell">Hypothesis refuted with high-confidence telemetry, documented absence of activity</div>
+          <div class="output-routing-cell"><span class="route-tag">Hunt record library</span></div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">The accountability principle</span>
+        <p>The only hunt failure is producing no structured output. That means the hunt consumed analyst time and generated no program value beyond the analyst's personal knowledge. Every hunt that closes without a structured output record has no accountability trail.</p>
+      </div>
+
+      <p class="section-eyebrow">// output type 2</p>
+      <h2>Detection Candidates: the Highest Long-Term Value Output</h2>
+
+      <p>A detection candidate is a hunt query that produced actionable signal, activity that, if observed again, should trigger an alert. It converts one analyst's investigation into a permanent automated capability. Not every hunt query meets the quality threshold:</p>
+
+      <ul>
+        <li>The signal must be specific enough to have an acceptable false positive rate in production</li>
+        <li>The technique must not already be covered by an existing production rule</li>
+        <li>The required telemetry must be reliably available, not dependent on an intermittent log source</li>
+        <li>The detection logic must be expressible as a rule,  not dependent on analyst judgment that cannot be codified</li>
+      </ul>
+
+      <div class="record-template">
+        <div class="record-header">Detection Candidate Record, minimum fields</div>
+        <div class="record-row"><div class="record-key">Candidate ID</div><div class="record-val">DC-2024-047</div></div>
+        <div class="record-row"><div class="record-key">Source hunt</div><div class="record-val">H-2024-031, APT29 WMIC lateral movement hypothesis</div></div>
+        <div class="record-row"><div class="record-key">Technique covered</div><div class="record-val">T1047, Windows Management Instrumentation (lateral movement variant)</div></div>
+        <div class="record-row"><div class="record-key">Hunt query</div><div class="record-val"><code>EventID=1 AND Image="*wmic.exe" AND ParentImage NOT IN (approved_admin_tools) AND CommandLine CONTAINS "process call create"</code></div></div>
+        <div class="record-row"><div class="record-key">Signal observed</div><div class="record-val">3 instances in 30-day window across 2 hosts: 1 confirmed benign (helpdesk tool), 2 unexplained pending IR review</div></div>
+        <div class="record-row"><div class="record-key">Estimated FP rate</div><div class="record-val">Low, helpdesk tool is the only known legitimate source; filterable by ParentImage exclusion</div></div>
+        <div class="record-row"><div class="record-key">Known bypass</div><div class="record-val">Parent process spoofing, supplement with Sysmon EIDs 19–21 for WMI persistence variant</div></div>
+        <div class="record-row"><div class="record-key">Required telemetry</div><div class="record-val">Sysmon Event ID 1 with full command line, confirmed available across all endpoint tiers</div></div>
+        <div class="record-row"><div class="record-key">Assigned to</div><div class="record-val">Detection engineering backlog, owner: [name] - target review: [date]</div></div>
+      </div>
+
+      <p>The known bypass field is non-negotiable. A detection candidate handed to engineering without documenting how it can be evaded produces a rule that gives false confidence. Every candidate should also be validated against the Atomic Red Team test for the covered technique before promotion to production.</p>
+
+      <p class="section-eyebrow">// output type 3</p>
+      <h2>Telemetry Gap Findings: a First-Class Output</h2>
+
+      <p>A gap found during a hunt is a gap that exists right now, for a technique a threat actor in your sector is actively using. It is more operationally urgent than a gap discovered during an annual coverage review. Three gap types, each with different remediation paths:</p>
+
+      <ul>
+        <li><strong>Missing log source:</strong> the event type is simply not collected, requires configuration change or sensor deployment</li>
+        <li><strong>Truncated or stripped fields:</strong> the log source is collected but critical fields are stripped at ingestion, requires pipeline configuration change</li>
+        <li><strong>Retention window mismatch:</strong> collected but retained for 14 days; the hunt requires 90-day visibility, requires a budget conversation</li>
+      </ul>
+
+      <div class="record-template">
+        <div class="record-header">Telemetry Gap Record: minimum fields</div>
+        <div class="record-row"><div class="record-key">Gap ID</div><div class="record-val">TG-2024-019</div></div>
+        <div class="record-row"><div class="record-key">Source hunt</div><div class="record-val">H-2024-031, WMI persistence hypothesis</div></div>
+        <div class="record-row"><div class="record-key">Missing telemetry</div><div class="record-val">Sysmon Event IDs 19, 20, 21 (WMI filter/consumer/binding creation)</div></div>
+        <div class="record-row"><div class="record-key">Gap type</div><div class="record-val">Missing log source, Sysmon config does not include WMI event logging</div></div>
+        <div class="record-row"><div class="record-key">Techniques undetectable</div><div class="record-val">T1546.003, WMI Event Subscription persistence</div></div>
+        <div class="record-row"><div class="record-key">Threat relevance</div><div class="record-val">APT29, FIN7, multiple ransomware affiliates use WMI persistence</div></div>
+        <div class="record-row"><div class="record-key">Remediation</div><div class="record-val">Add WMI event logging to Sysmon config, estimated 15-min config change, moderate volume increase</div></div>
+        <div class="record-row"><div class="record-key">Priority</div><div class="record-val">High, technique in active use by actors targeting our sector</div></div>
+      </div>
+
+      <p>The threat relevance field converts a gap record from a technical finding into a prioritizable risk item. Naming specific threat actors that use the undetectable technique provides the business case for remediation investment.</p>
+
+      <p class="section-eyebrow">// output type 4</p>
+      <h2>Negative Findings and the Absence-of-Evidence Library</h2>
+
+      <p>Negative findings are the most systematically neglected hunt output, and the one with the highest latent value for incident scoping. A negative finding is not "we found nothing." It is a documented assertion: we searched for a specific technique in specific telemetry across a specific scope for a specific time window and did not observe evidence of it, with a confidence level based on telemetry completeness.</p>
+
+      <p>Three confidence levels, applied consistently:</p>
+
+      <ul>
+        <li><strong>High confidence:</strong> telemetry source confirmed complete for the hunt scope and time window. The technique was not observed. This assertion can be cited in IR scoping to bound where activity did not occur.</li>
+        <li><strong>Medium confidence:</strong> telemetry present but with known limitations. The technique was probably not observed but absence cannot be asserted definitively.</li>
+        <li><strong>Low confidence:</strong> telemetry gaps prevent a meaningful search. Record as a telemetry gap (Output Type 3), not a negative finding.</li>
+      </ul>
+
+      <p>Negative findings accumulated over time become a queryable absence-of-evidence library. When an incident occurs, the IR team can query this library to determine which techniques have been searched for and not found in recent periods, reducing scope and focusing investigation. A growing library of high-confidence negative findings is also a defensible artifact in regulatory investigations and post-incident reviews.</p>
+
+      <p class="section-eyebrow">// documentation</p>
+      <h2>The Hunt Record: Making All Four Outputs Durable</h2>
+
+      <p>Every completed hunt requires a hunt record: the parent document that captures the full analytical context and links to each output generated. It should be readable by an analyst who was not present and must reconstruct what happened.</p>
+
+      <div class="record-template">
+        <div class="record-header">Hunt Record: minimum fields</div>
+        <div class="record-row"><div class="record-key">Hunt ID</div><div class="record-val">H-2024-031</div></div>
+        <div class="record-row"><div class="record-key">Hypothesis</div><div class="record-val">IF APT29-consistent tradecraft is present, THEN we expect WMIC spawning cmd.exe/PowerShell on privileged-account endpoints, IN Sysmon Event ID 1, WITHIN all tier-1 endpoints over 30 days</div></div>
+        <div class="record-row"><div class="record-key">Input source</div><div class="record-val">CTI report, [vendor] APT29 campaign analysis, 2024-10-15</div></div>
+        <div class="record-row"><div class="record-key">Queries used</div><div class="record-val">[verbatim query text, reproducible without modification]</div></div>
+        <div class="record-row"><div class="record-key">Data sources checked</div><div class="record-val">Sysmon EID 1 (complete), EID 3 (complete), EID 19–21 (ABSENT, see TG-2024-019)</div></div>
+        <div class="record-row"><div class="record-key">Result</div><div class="record-val">No adversary activity confirmed. 2 unexplained WMIC instances escalated as detection candidate DC-2024-047. WMI telemetry gap identified as TG-2024-019</div></div>
+        <div class="record-row"><div class="record-key">Outputs generated</div><div class="record-val">DC-2024-047 (detection candidate) | TG-2024-019 (telemetry gap) | NF-2024-083 (negative finding, medium confidence)</div></div>
+        <div class="record-row"><div class="record-key">Confidence level</div><div class="record-val">Medium, hypothesis partially testable; WMI persistence vector not covered due to telemetry gap</div></div>
+        <div class="record-row"><div class="record-key">Follow-on hunts</div><div class="record-val">Re-execute H-2024-031 after TG-2024-019 is remediated</div></div>
+      </div>
+
+      <p>The queries used field must be verbatim and reproducible, not a description, not pseudocode. Another analyst must be able to paste it into the SIEM and reproduce the hunt exactly. The data sources checked field is as important as the result, it defines the evidence boundary of the hunt's conclusions.</p>
+
+      <p class="section-eyebrow">// metrics</p>
+      <h2>Program Metrics That Only Become Possible with Structured Outputs</h2>
+
+      <div class="metrics-list">
+        <div class="metric-item">
+          <div class="metric-name">Detection candidates → production</div>
+          <div class="metric-desc">Measures the detection engineering contribution of hunting. The primary metric for justifying hunt program investment to leadership.</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-name">Telemetry gaps identified vs. closed</div>
+          <div class="metric-desc">Measures whether coverage is actually improving. A growing gap backlog with no closures signals a resourcing or prioritization failure.</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-name">High-confidence negative findings per technique category</div>
+          <div class="metric-desc">Measures the organization's ability to make meaningful absence claims. A mature program can assert what it has actively looked for and not found.</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-name">Hunt re-execution rate after gap remediation</div>
+          <div class="metric-desc">Measures whether telemetry gaps are actually being closed and tested. Gap remediation that is never followed by a re-hunt produced no detection value.</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-name">Time from hunt finding to production detection</div>
+          <div class="metric-desc">Measures pipeline latency between a hunter finding a technique and the SOC having automated coverage for it.</div>
+        </div>
+      </div>
+
+      <p>These metrics require structured output records to compute. They cannot be calculated from hunt tickets or verbal debriefs. The documentation discipline and the measurement capability are the same investment.</p>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>A Hunt Program Is Only as Mature as Its Outputs</h2>
+
+      <div class="pull-quote">
+        "A hunt that finds nothing and documents nothing cost forty analyst hours and produced zero institutional value. The documentation is not overhead, it is the product."
+      </div>
+
+      <p>The value of a hunt program is not measured by how many hunts ran or whether any found an adversary. It is measured by whether the program is detectably better after six months of hunting than it was before. Detection candidates in production, telemetry gaps closed, a growing absence-of-evidence library, these only exist if outputs are structured and routed.</p>
+
+      <p>The closing test: take your last ten hunt records and count how many produced a detection candidate that reached production, how many identified a telemetry gap that was subsequently closed, and how many generated a negative finding with a documented confidence level. If the answer to all three is zero, you have been running hunts. You have not been running a hunt program.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>Sqrrl hunting maturity model (HMM) levels 1–4, structured output documentation is the inflection point between level 2 and level 3; SANS FOR508 hunt documentation standards; Palantir ADS framework for detection candidate handoff.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="hypothesis-driven-hunting.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Hypothesis-Driven Threat Hunting
+        </a>
+        <a href="lolbas-detection.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          LOLBAS Detection Is an Architecture Problem
+        </a>
+        <a href="triage-knowledge-transfer.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Triage Knowledge Transfer
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>

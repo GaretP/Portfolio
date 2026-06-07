@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detection Threshold Evasion: Garet P.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    :root {
+      --bg: #0a0a0f; --surface: #11111a; --surface2: #18182a;
+      --border: rgba(180,140,255,0.12); --border-hi: rgba(180,140,255,0.45);
+      --glow: rgba(142,107,255,0.18); --accent: #a78bfa; --accent2: #7dd3fc;
+      --text: #e8e8f0; --muted: #8888a8; --radius: 10px;
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    body { background: radial-gradient(ellipse at 85% 95%, rgba(76,29,149,0.35) 0%, transparent 55%), radial-gradient(ellipse at 5% 0%, rgba(125,211,252,0.08) 0%, transparent 45%), var(--bg); font-family: var(--font-body); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.6; }
+    a { color: inherit; text-decoration: none; }
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 200; transition: width 0.1s linear; }
+    .top-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 3rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .top-bar-left { display: flex; align-items: center; gap: 1.25rem; }
+    .top-avatar { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border-hi); box-shadow: 0 0 12px var(--glow); flex-shrink: 0; object-fit: cover; display: block; }
+    .top-divider { width: 1px; height: 18px; background: var(--border); }
+    .top-blog-link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.2s; }
+    .top-blog-link:hover { color: var(--accent); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.38rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+    .back-link svg { transition: transform 0.2s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 3.5rem 2rem 6rem; animation: fadeUp 0.5s ease both; }
+    .post-header { margin-bottom: 2.25rem; }
+    .post-meta { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+    .post-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); border-radius: 4px; padding: 0.18rem 0.55rem; }
+    .post-date, .post-read-time { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+    .post-header h1 { font-family: var(--font-head); font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 1.1rem; }
+    .post-lead { font-size: 1.05rem; color: var(--muted); line-height: 1.72; border-left: 3px solid var(--accent); padding-left: 1.25rem; }
+    .post-divider { width: 100%; height: 1px; background: var(--border); margin: 2rem 0; }
+    .post-body { display: flex; flex-direction: column; gap: 1.5rem; }
+    .post-body p { font-size: 0.97rem; color: var(--muted); line-height: 1.82; }
+    .post-body h2 { font-family: var(--font-head); font-size: 1.55rem; font-weight: 400; color: var(--text); margin-top: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .post-body h3 { font-family: var(--font-head); font-size: 1.15rem; font-weight: 400; color: var(--text); margin-top: 0.25rem; }
+    .post-body strong { color: var(--text); font-weight: 500; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .post-body li { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+    .post-body li strong { color: var(--text); }
+    .post-body code { font-family: var(--font-mono); font-size: 0.82rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.45rem; color: var(--accent2); }
+    .post-body pre { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.65; }
+    .post-body pre code { background: none; border: none; padding: 0; color: inherit; }
+    .pull-quote { border-left: 3px solid var(--accent); padding: 1rem 1.5rem; background: rgba(167,139,250,0.05); border-radius: 0 var(--radius) var(--radius) 0; font-family: var(--font-head); font-size: 1.15rem; color: var(--text); line-height: 1.6; font-style: italic; }
+    .callout { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .callout-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .callout p { font-size: 0.9rem !important; line-height: 1.7 !important; }
+    .section-eyebrow { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: -0.75rem; }
+
+    /* Pattern cards */
+    .pattern-list { display: flex; flex-direction: column; gap: 1rem; }
+    .pattern-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+    .pattern-card:hover { border-color: var(--border-hi); }
+    .pattern-header { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.25rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .pattern-num { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; }
+    .pattern-title { font-size: 0.9rem; color: var(--text); font-weight: 500; flex: 1; }
+    .pattern-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .p-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.1rem; }
+    .pattern-body p { font-size: 0.87rem !important; line-height: 1.65 !important; }
+    .pattern-body pre { font-size: 0.78rem; padding: 0.85rem 1rem; margin: 0; }
+    .gap-box { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.2); border-radius: 6px; padding: 0.65rem 0.9rem; }
+    .gap-box .p-label { color: #f87171; }
+    .gap-box p { font-size: 0.84rem !important; color: var(--muted); }
+    .fix-box { background: rgba(74,222,128,0.05); border: 1px solid rgba(74,222,128,0.2); border-radius: 6px; padding: 0.65rem 0.9rem; }
+    .fix-box .p-label { color: #4ade80; }
+    .fix-box p { font-size: 0.84rem !important; color: var(--muted); }
+
+    /* Rule comparison */
+    .rule-compare { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .rule-compare-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+    .rule-compare-row:last-child { border-bottom: none; }
+    .rule-compare-row.header { background: var(--surface2); }
+    .rule-compare-cell { padding: 0.85rem 1.1rem; font-size: 0.85rem; color: var(--muted); border-right: 1px solid var(--border); line-height: 1.55; }
+    .rule-compare-cell:last-child { border-right: none; }
+    .rule-compare-row.header .rule-compare-cell { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .rule-compare-row.header .rule-compare-cell:first-child { color: #f87171; }
+    .rule-compare-row.header .rule-compare-cell:last-child { color: #4ade80; }
+    .rule-compare-cell code { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent2); display: block; white-space: pre-wrap; }
+
+    /* Engineering responses */
+    .response-list { display: flex; flex-direction: column; gap: 0.85rem; }
+    .response-item { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: border-color 0.2s; }
+    .response-item:hover { border-color: var(--border-hi); }
+    .response-num { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--accent); flex-shrink: 0; padding-top: 0.1rem; min-width: 1.5rem; }
+    .response-content h4 { font-size: 0.9rem; color: var(--text); font-weight: 500; margin-bottom: 0.35rem; }
+    .response-content p { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .post-footer-author { display: flex; align-items: center; gap: 0.85rem; }
+    .footer-avatar { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--border-hi); flex-shrink: 0; object-fit: cover; display: block; }
+    .footer-author-name { font-family: var(--font-head); font-size: 1rem; color: var(--text); }
+    .footer-author-role { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.15rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px; transition: color 0.2s, border-color 0.2s; }
+    .back-to-blog:hover { color: var(--accent); border-color: var(--accent); }
+    .back-to-blog svg { transition: transform 0.2s; }
+    .back-to-blog:hover svg { transform: translateX(-2px); }
+    .related { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .related-label { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .related-links { display: flex; flex-direction: column; gap: 0.6rem; }
+    .related-link { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--muted); transition: color 0.2s; }
+    .related-link:hover { color: var(--accent); }
+    .related-link svg { flex-shrink: 0; transition: transform 0.2s; }
+    .related-link:hover svg { transform: translateX(3px); }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <img class="top-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+      <div class="top-divider"></div>
+      <a href="../index.html" class="top-blog-link">Blog</a>
+    </div>
+    <a href="../../index.html" class="back-link">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Hub
+    </a>
+  </header>
+
+  <main class="article-wrap">
+    <div class="post-header">
+      <div class="post-meta">
+        <span class="post-tag">Detection</span>
+        <span class="post-tag">SOC</span>
+        <span class="post-date">Jun 2026</span>
+        <span class="post-read-time">· 17 min read</span>
+      </div>
+      <h1>Detection Threshold Evasion: How Rate-Based Rules Encode a Detectable Floor</h1>
+      <p class="post-lead">Your rule fires at ten failed logins in five minutes. The attacker tried nine. Your rule fires at five lateral movement events in one hour. The attacker took ninety minutes. Your detection logic has a floor, and the attacker is standing just below it, reading your rules the same way you wrote them.</p>
+    </div>
+
+    <div class="post-divider"></div>
+
+    <div class="post-body">
+
+      <p class="section-eyebrow">// introduction</p>
+      <h2>Detection Rules Encode a Detectable Floor</h2>
+
+      <p>Rate-based detection logic, rules that fire when an event count exceeds a threshold within a time window, is one of the most common patterns in enterprise SIEM deployments. Brute force, lateral movement, reconnaissance, and exfiltration detection all rely heavily on it. The structural problem: every threshold and every time window is a parameter the attacker can read.</p>
+
+      <p>Published detection rules, vendor documentation, public Sigma repositories, and behavioral patterns inferred from probe activity all expose the detection floor. SUNBURST made this operational: the implant implemented a dormancy period of up to two weeks post-installation and limited DNS beacon rates specifically to avoid triggering anomaly detection thresholds. The parameters were engineered against known detection patterns. This is not a theoretical evasion, it is production malware tradecraft.</p>
+
+      <div class="pull-quote">
+        "A threshold is a contract with the attacker. It says: do fewer than N of these things in T minutes and we will not notice. The attacker who reads that contract and operates accordingly is not evading detection, they are complying with the terms you published."
+      </div>
+
+      <p class="section-eyebrow">// foundation</p>
+      <h2>The Three Window Types and Their Bypass Properties</h2>
+
+      <p>The basic structure: <code>COUNT(event_type) > N WITHIN WINDOW(T)</code>. Both parameters define a detection floor. Three window implementations, each with distinct bypass properties:</p>
+
+      <ul>
+        <li><strong>Tumbling window:</strong> fixed non-overlapping intervals. Bypass: straddle the window boundary, N-1 events in the last second of window 1, N-1 events in the first second of window 2. Total activity: 2(N-1). Alerts fired: zero.</li>
+        <li><strong>Sliding window:</strong> a rolling window that moves with each event. Harder to exploit than tumbling, but the maximum sustained rate below threshold is still calculable and maintainable indefinitely.</li>
+        <li><strong>Session/entity window:</strong> groups events within an inactivity timeout. Bypass: pause activity long enough to reset the session window, then resume with a fresh count.</li>
+      </ul>
+
+      <p>Threshold parameters are not kept secret. The SigmaHQ repository publishes specific count and window values for common detection use cases. Vendor default rules are documented in product knowledge bases. Attackers who probe at varying rates and observe when defensive responses occur can infer thresholds empirically, analogous to fuzzing a network service.</p>
+
+      <p class="section-eyebrow">// threat catalog</p>
+      <h2>Six Threshold and Time-Window Abuse Patterns</h2>
+
+      <div class="pattern-list">
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P01</span>
+            <span class="pattern-title">Window boundary straddling. tumbling window exploitation</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Distribute activity precisely across the boundary of a tumbling detection window. Round clock boundaries (rules starting at :00, :05, :10) make window start times inferrable without probing.</p>
+            </div>
+            <pre><code>Tumbling window: 5-min buckets. Threshold: 10 events.
+Window 1 [00:00–04:59]: 9 events → no alert
+Window 2 [05:00–09:59]: 9 events → no alert
+Total events in 10 minutes: 18. Alerts fired: 0.</code></pre>
+            <div class="fix-box">
+              <div class="p-label">Engineering response</div>
+              <p>Replace tumbling windows with sliding windows for high-value detection use cases. Accept the computational cost as a security investment.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P02</span>
+            <span class="pattern-title">Slow-and-low credential stuffing, rate throttling below brute force thresholds</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Distribute attempts across extended time periods or across a large population of source IPs, one attempt per 20 minutes from a rotating /24 block keeps per-source per-window count permanently below any per-IP threshold. This is now the dominant credential attack pattern against enterprise authentication.</p>
+            </div>
+            <pre><code>Rule: 10 failures from same IP in 5 minutes → alert
+Attacker: 1 attempt per 20 min from rotating /24
+Per-IP per-window count: 1. Rule fires: never.</code></pre>
+            <div class="fix-box">
+              <div class="p-label">Engineering response</div>
+              <p>Shift detection anchor from source IP to target account, N failed attempts against the same account from any source within T. Supplement with population-level global failed authentication rate anomaly detection.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P03</span>
+            <span class="pattern-title">Deliberate inter-event spacing, SUNBURST-style rate limiting</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Introduce deliberate delays between actions, random jitter, minimum inter-event gaps, or scheduled activity windows, to ensure no sliding window ever accumulates enough events to breach a threshold. SUNBURST randomized C2 beacon intervals and implemented a post-installation dormancy of up to two weeks specifically to defeat time-window-based anomaly detection.</p>
+            </div>
+            <pre><code>Rule: 5 DNS queries to new domains in 10 minutes → alert
+SUNBURST: 1 DNS query per 60–120 minutes (randomized)
+Per-window count: 1. Rule fires: never.
+Dormancy period: up to 14 days post-install.</code></pre>
+            <div class="fix-box">
+              <div class="p-label">Engineering response</div>
+              <p>Shift from rate analysis to periodicity analysis, detecting the statistical regularity of inter-event intervals regardless of rate. A process making one connection every 3,600 ± 120 seconds is not normal even if it never exceeds a count threshold.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P04</span>
+            <span class="pattern-title">Entity distribution, spreading activity across detection anchors</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Distribute activity across multiple source entities, accounts, IPs, hosts. Port scanning distributed across a /16 range, lateral movement using a different compromised account per hop, exfiltration across multiple user sessions. Each entity stays below threshold; aggregate activity is substantial.</p>
+            </div>
+            <pre><code>Rule: same source IP contacts >50 internal hosts in 1 hr
+Attacker: 100 source IPs, each contacts 5 hosts
+Per-IP count: 5. Rule fires: never.
+Total hosts contacted: 500.</code></pre>
+            <div class="fix-box">
+              <div class="p-label">Engineering response</div>
+              <p>Cross-entity aggregation rules, detect when the population-level rate of an activity type exceeds baseline regardless of which entities are involved. Group by activity type rather than entity identity as the primary detection anchor.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P05</span>
+            <span class="pattern-title">Session window reset, exploiting inactivity timeouts</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Deliberately pause activity to reset the session window, then resume with a fresh count. Particularly relevant for UEBA rules that track session-level anomaly scores, a pause of sufficient length resets accumulated anomaly scoring.</p>
+            </div>
+            <pre><code>Rule: >5 sensitive file accesses in one session
+Inactivity timeout: 15 minutes
+Attacker: 4 files, pause 16 min, 4 more files
+Session 1: 4 accesses. Session 2: 4 accesses.
+Alert fires: never. Total accessed: 8.</code></pre>
+            <div class="fix-box">
+              <div class="p-label">Engineering response</div>
+              <p>Cross-session aggregation within a longer look-back window, count events across all sessions for a given entity in a rolling 24-hour window. Session boundaries should not reset the cumulative count for high-sensitivity event types.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-num">P06</span>
+            <span class="pattern-title">Threshold probing, empirical discovery of detection parameters</span>
+          </div>
+          <div class="pattern-body">
+            <div>
+              <div class="p-label">Mechanics</div>
+              <p>Send N authentication failures and observe whether a lockout or defensive response occurs. Gradually increment until a response is observed, then operate at N-1. The probing sequence looks identical to normal failed authentication noise, it is detection reconnaissance, treating the detection system as an oracle that reveals its own parameters.</p>
+            </div>
+            <pre><code>Probe: 3, 5, 8 auth failures → no response
+Probe: 10 auth failures → account lockout observed
+Operational pattern: 9 failures maximum per session.</code></pre>
+            <div class="gap-box">
+              <div class="p-label">Detection gap</div>
+              <p>Probing activity is below the detection threshold by design. Detection of the probing pattern itself, an incrementing failure sequence stopping just below lockout, requires meta-detection: alerting on behavior that looks like threshold discovery rather than just threshold exceeding.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="section-eyebrow">// self-assessment</p>
+      <h2>Rule Design Audit: Evaluating Your Own Detection Logic</h2>
+
+      <p>Every threshold-based rule should be evaluated against four bypass questions before production, and periodically reviewed as techniques evolve:</p>
+
+      <ul>
+        <li>Can the activity be distributed across entities such that no single entity exceeds the threshold?</li>
+        <li>Can the activity be spread across time windows such that no single window contains enough events to trigger?</li>
+        <li>Can the activity be paused and resumed in a pattern that resets the detection window without changing total volume?</li>
+        <li>Are the threshold parameters inferrable from public sources, Sigma repositories, vendor docs, or probe-based discovery?</li>
+      </ul>
+
+      <p>If the answer to any question is yes, the rule has a known bypass and should be supplemented with additional detection logic.</p>
+
+      <div class="rule-compare">
+        <div class="rule-compare-row header">
+          <div class="rule-compare-cell">Exploitable rule design</div>
+          <div class="rule-compare-cell">Hardened rule design</div>
+        </div>
+        <div class="rule-compare-row">
+          <div class="rule-compare-cell"><code>COUNT(failed_auth) > 10
+WHERE source_ip = $src
+WITHIN 5min tumbling window</code>
+          <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--muted)">Bypassed by: distributed sources, tumbling boundary straddle, slow-and-low rate</p></div>
+          <div class="rule-compare-cell"><code>COUNT(failed_auth) > 5
+WHERE target_account = $acct
+WITHIN 30min sliding window
+UNION
+STDDEV(hourly_fail_count) > 3σ
+WHERE global_population = true</code>
+          <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--muted)">Requires: account-anchored + population-level anomaly. Much harder to operate beneath both simultaneously.</p></div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// remediation</p>
+      <h2>Five Engineering Responses That Reduce Threshold Exploitability</h2>
+
+      <div class="response-list">
+        <div class="response-item">
+          <span class="response-num">01</span>
+          <div class="response-content">
+            <h4>Shift detection anchor from source to target</h4>
+            <p>Anchor counts on the target entity (account, resource being accessed) rather than the source. An attacker distributing attempts across 1,000 source IPs is still targeting the same accounts, source-distributed attacks are invisible to source-anchored rules and fully visible to target-anchored rules.</p>
+          </div>
+        </div>
+        <div class="response-item">
+          <span class="response-num">02</span>
+          <div class="response-content">
+            <h4>Replace rate detection with periodicity detection for C2</h4>
+            <p>Beaconing at low rate evades count thresholds but cannot easily disguise statistical regularity. Compute inter-event interval standard deviation for long-running outbound connections by process, a coefficient of variation near zero is anomalous for process-initiated traffic. Requires Sysmon EID 3 or EDR network telemetry with process correlation.</p>
+          </div>
+        </div>
+        <div class="response-item">
+          <span class="response-num">03</span>
+          <div class="response-content">
+            <h4>Population-level baseline detection as a threshold complement</h4>
+            <p>Per-entity threshold rules are blind to distributed activity. Population-level detection measures whether the aggregate rate of an activity type across the entire monitored population exceeds historical baseline, regardless of which entities are involved. A 40% increase in DNS queries to newly registered domains is detectable even if no single host exceeds a per-host threshold.</p>
+          </div>
+        </div>
+        <div class="response-item">
+          <span class="response-num">04</span>
+          <div class="response-content">
+            <h4>Extended look-back windows for low-and-slow patterns</h4>
+            <p>Activities individually unremarkable but cumulatively significant require look-back windows measured in hours or days, not minutes. A user accessing 5 sensitive files per session over 20 sessions in a week has accessed 100 files, invisible to session-level rules, visible to a weekly cumulative threshold. Accept the storage cost as a security investment.</p>
+          </div>
+        </div>
+        <div class="response-item">
+          <span class="response-num">05</span>
+          <div class="response-content">
+            <h4>Sequence detection as a threshold-independent signal</h4>
+            <p>Some patterns are significant not because of rate but because of ordering. A reconnaissance event followed by credential access followed by lateral movement is a kill chain, each event below any threshold individually, but the sequence is the signal. Sequence-based detection operates orthogonally to threshold-based detection and is not exploitable by rate reduction.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="section-eyebrow">// conclusion</p>
+      <h2>Know Your Floor and Be Honest About What Is Below It</h2>
+
+      <p>Threshold-based detection is a commodity attacker filter, not a sophisticated attacker filter. It reliably catches activity that ignores the detection floor, automated scanners, commodity malware, unsophisticated intrusion attempts. Against an actor who has read your detection rules, it catches nothing. A detection program that relies primarily on threshold-based rules has calibrated itself for the wrong threat level.</p>
+
+      <p>The closing test: take your three most important threshold-based rules. Run each at N-1 events in T-plus-one minutes, distributed across two source entities. If none of that activity appears anywhere in your SIEM, not in alerts, not in search results, not in any analyst queue, you have documented your detection floor. The question is whether anyone in your organization knows it exists.</p>
+
+      <div class="callout">
+        <span class="callout-label">Key references</span>
+        <p>SUNBURST/SOLORIGATE technical analysis (FireEye/Mandiant, 2020); SigmaHQ rule repository as illustration of publicly available threshold parameters; Palantir ADS framework on detection coverage claims; MITRE ATT&CK T1110 (Brute Force) sub-techniques.</p>
+      </div>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="post-footer-author">
+        <img class="footer-avatar" src="../../src/avatar.jpg" alt="Garet P."/>
+        <div>
+          <div class="footer-author-name">Garet</div>
+          <div class="footer-author-role">SOC Analyst</div>
+        </div>
+      </div>
+      <a href="../index.html" class="back-to-blog">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        All posts
+      </a>
+    </div>
+
+    <div class="related">
+      <div class="related-label">// related posts</div>
+      <div class="related-links">
+        <a href="log-pipeline-manipulation.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Log Pipeline Manipulation
+        </a>
+        <a href="false-positive-conditioning.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          False Positive Conditioning
+        </a>
+        <a href="lolbas-detection.html" class="related-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          LOLBAS Detection Is an Architecture Problem
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const doc = document.documentElement;
+      document.getElementById('progress-bar').style.width =
+        (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+    });
+  </script>
+</body>
+</html>
