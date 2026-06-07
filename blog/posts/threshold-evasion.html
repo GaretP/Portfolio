@@ -116,6 +116,39 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(180,140,255,0.15); border-radius: 3px; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      .top-bar { padding: 0.85rem 1.25rem; }
+      .article-wrap { padding: 2rem 1.1rem 4rem; }
+      .post-header h1 { font-size: clamp(1.5rem, 6vw, 2.2rem); }
+      .post-lead { font-size: 0.95rem; }
+      .post-body p, .post-body li { font-size: 0.93rem; }
+      .post-body h2 { font-size: 1.3rem; }
+      .post-body pre { font-size: 0.75rem; padding: 0.9rem 1rem; overflow-x: auto; }
+      .binary-row, .source-row, .output-row, .transfer-row,
+      .metrics-row, .integrity-row, .record-row, .timeline-row,
+      .output-routing-row, .contrast-row, .rule-compare-row,
+      .pipeline-stage, .binary-row { grid-template-columns: 1fr; }
+      .binary-cell, .source-cell, .output-cell, .transfer-cell,
+      .metrics-cell, .integrity-cell, .record-cell, .timeline-cell,
+      .output-routing-cell, .contrast-cell, .rule-compare-cell,
+      .pipeline-cell {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .telemetry-item { flex-direction: column; gap: 0.5rem; }
+      .technique-header { flex-wrap: wrap; gap: 0.5rem; }
+      .rule-body pre, .technique-body pre, .pattern-body pre { font-size: 0.73rem; }
+      .heuristic-body, .scenario-body, .pattern-body,
+      .technique-body, .rule-body { padding: 0.9rem 1rem; }
+      .post-footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .related-links { gap: 0.5rem; }
+    }
+
+    @media (max-width: 400px) {
+      .article-wrap { padding: 1.5rem 0.9rem 3rem; }
+      .top-bar { padding: 0.75rem 1rem; }
+    }
   </style>
 </head>
 <body>
